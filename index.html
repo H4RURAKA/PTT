@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko" data-theme="light" data-cvd="0">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>포켓몬 속성 계산표 · 팀 커버리지 / 약점 분석기</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <!-- 고정 헤더 -->
+  <header id="appHeader">
+    <div class="wrap">
+      <div class="app-title">
+        <h1>포켓몬 속성 계산표 · 커버리지 & 약점 분석</h1>
+        <span class="pill">6세대 이후 타입 상성 기준</span>
+        <div class="right controls">
+          <button id="cvdBtn" class="btn" title="색각친화 모드">색각친화</button>
+          <button id="themeBtn" class="btn" title="테마 전환">라이트/다크</button>
+          <button id="resetBtn" class="btn" title="초기화">초기화</button>
+          <button id="shareBtn" class="btn" title="선택 상태를 URL로 공유">URL 복사</button>
+          <button id="printBtn" class="btn" title="인쇄">인쇄</button>
+        </div>
+      </div>
+      <div class="sub">팀(최대 6마리)의 속성을 직접 선택하면, 공격 커버리지와 방어 취약점을 자동 계산합니다. 각 슬롯은 최대 2속성까지 선택 가능합니다.</div>
+    </div>
+  </header>
+  <!-- 헤더 높이만큼 간격 확보 -->
+  <div id="header-spacer"></div>
+
+  <main class="container">
+    <div class="grid grid-wide-right">
+      <!-- 좌측 메인 칼럼 -->
+      <div class="main">
+        <!-- 팀 구성 -->
+        <div class="card">
+          <div class="head">
+            <h2>팀 구성 <span class="muted" id="typeCounter" style="font-weight:normal">고유 속성: 0/12</span></h2>
+          </div>
+          <div class="body">
+            <div class="team-board" id="teamBoard"></div>
+          </div>
+        </div>
+
+        <!-- 공격 커버리지 -->
+        <div class="card">
+          <div class="head">
+            <h2>공격 커버리지</h2>
+            <div class="legend">
+              <span class="pill">미커버(2× 불가) 타입 열은 <b>배경 하이라이트</b>됩니다.</span>
+              <span class="muted">배율:</span>
+              <span class="eff eff-0">0×</span>
+              <span class="eff eff-50">0.5×</span>
+              <span class="eff eff-100">1×</span>
+              <span class="eff eff-200">2×</span>
+            </div>
+          </div>
+          <div class="body">
+            <div class="kpis">
+              <div class="kpi"><span class="muted">2×로 때릴 수 있는 타입</span><strong id="atkStrongCount">0 / 18</strong></div>
+              <div class="kpi"><span class="muted">2× 불가 타입</span><strong id="atkHolesCount">18</strong></div>
+              <div class="kpi"><span class="muted">선택한 공격 속성</span><strong id="atkTypesCount">0</strong></div>
+            </div>
+            <div class="list" id="atkStrongList"></div>
+            <div class="hole-block" id="holeSuggest"></div>
+            <div class="footer">아래 표의 마지막 행 <b>전체</b>는 팀의 모든 공격 속성 중 가장 유리한 배율을 표시합니다.</div>
+            <div class="table-wrap" style="margin-top:10px">
+              <table id="attackTable"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 방어 취약점 -->
+        <div class="card">
+          <div class="head">
+            <h2>방어 취약점</h2>
+            <div class="legend">
+              <span class="muted">팀 기준 집계: 4×, 2×, 1×, 0.5×, 0.25×, 0×</span>
+            </div>
+          </div>
+          <div class="body">
+            <div class="kpis">
+              <div class="kpi"><span class="muted">4× 취약 보유</span><strong id="defFourCount">0 타입</strong></div>
+              <div class="kpi"><span class="muted">2× 취약 보유</span><strong id="defTwoCount">0 타입</strong></div>
+              <div class="kpi"><span class="muted">면역(0×) 보유</span><strong id="defImmuneCount">0 타입</strong></div>
+            </div>
+            <div class="list" id="defWeakList"></div>
+            <div class="table-wrap" style="margin-top:10px">
+              <table id="defenseTable"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우측 사이드 -->
+      <aside class="side">
+        <div class="card">
+          <div class="head"><h2>남은 속성</h2></div>
+          <div class="body">
+            <div class="list" id="remainingTypes"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="head"><h2>추가 분석</h2></div>
+          <div class="body">
+            <ul>
+              <li><b>공격 커버 미흡</b>: 2×로 때릴 수 없는 타입을 열 하이라이트로 표시하고, 보완 가능한 속성을 제안합니다.</li>
+              <li><b>방어 중첩 약점</b>: 팀 기준 4× 또는 2× 약점이 많은 공격 타입을 강조합니다.</li>
+              <li><b>개별 슬롯 약점/저항</b>: 각 슬롯 아래에 4×, 2×, 0×, 0.25×, 0.5× 요약 칩을 제공합니다.</li>
+              <li><b>면역/저항</b>: 팀에 존재하는 면역(0×) 및 강한 저항(0.25×, 0.5×)도 표에 집계합니다.</li>
+              <li><b>공유/저장</b>: 상단의 URL 복사 버튼으로 현재 구성을 공유할 수 있습니다.</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module">
+    import { TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK } from './src/types.js';
+    import { effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode } from './src/effects.js';
+    import { bootstrapApp, adjustHeaderSpacer } from './src/app.js';
+
+    bootstrapApp({ TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK, effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode });
+    adjustHeaderSpacer();
+    window.addEventListener('resize', adjustHeaderSpacer);
+  </script>
+</body>
+</html>
