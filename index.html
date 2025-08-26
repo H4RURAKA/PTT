@@ -3,40 +3,60 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
   <title>포켓몬 속성 계산표</title>
-  <link rel="stylesheet" href="./src/styles.css">
+  <link rel="stylesheet" href="./src/styles.css" />
 </head>
 
 <body>
-  <!-- 고정 헤더 -->
+  <!-- ===== 고정 헤더 ===== -->
   <header id="appHeader">
     <div class="wrap">
       <div class="app-title">
         <h1>포켓몬 속성 계산표 · 커버리지 & 약점 분석</h1>
         <span class="pill">6세대 이후 타입 상성 기준</span>
-        <div class="right controls">
-          <button id="cvdBtn" class="btn" title="색각친화 모드">색각친화</button>
-          <button id="themeBtn" class="btn" title="테마 전환">라이트/다크</button>
-          <button id="resetBtn" class="btn" title="초기화">초기화</button>
-          <button id="shareBtn" class="btn" title="선택 상태를 URL로 공유">URL 복사</button>
-          <button id="printBtn" class="btn" title="인쇄">인쇄</button>
+
+        <!-- 상단 우측 컨트롤 -->
+        <div class="right controls" role="group" aria-label="화면 설정 및 공유">
+          <button id="cvdBtn" class="btn" type="button" title="색각친화 모드" aria-label="색각친화 모드 전환" aria-pressed="false">색각친화</button>
+          <button id="themeBtn" class="btn" type="button" title="테마 전환" aria-label="라이트 다크 테마 전환" aria-pressed="false">라이트/다크</button>
+          <button id="resetBtn" class="btn" type="button" title="초기화" aria-label="초기화">초기화</button>
+          <button id="shareBtn" class="btn" type="button" title="선택 상태를 URL로 공유" aria-label="URL 복사">URL 복사</button>
+          <button id="printBtn" class="btn" type="button" title="인쇄" aria-label="인쇄">인쇄</button>
         </div>
       </div>
-      <div class="sub">팀(최대 6마리)의 속성을 직접 선택하거나, 포켓몬을 검색해서 타입을 적용하세요. 각 슬롯은 최대 2속성까지 선택 가능합니다.</div>
+
+      <div class="sub">
+        팀(최대 6마리)의 속성을 직접 선택하거나, 포켓몬을 검색해서 타입을 적용하세요. 각 슬롯은 최대 2속성까지 선택 가능합니다.
+      </div>
     </div>
   </header>
+
+  <!-- 헤더 높이만큼 레이아웃 보정 -->
   <div id="header-spacer"></div>
 
   <main class="container">
     <div class="grid grid-wide-right">
-      <!-- 좌측 메인 -->
+      <!-- ===== 좌측 메인 ===== -->
       <div class="main">
         <!-- 팀 구성 -->
         <div class="card">
           <div class="head">
-            <h2>팀 구성 <span class="muted" id="typeCounter" style="font-weight:normal">고유 속성: 0/12</span></h2>
+            <h2>
+              팀 구성
+              <!-- 팀에서 사용 중인 고유 타입 수를 실시간으로 갱신 -->
+              <span
+                id="typeCounter"
+                class="muted"
+                style="font-weight: normal"
+                aria-live="polite"
+                aria-atomic="true"
+              >고유 속성: 0/12</span>
+            </h2>
           </div>
+
           <div class="body">
+            <!-- 팀 슬롯 보드 (JS에서 슬롯/포켓몬 렌더) -->
             <div class="team-board" id="teamBoard"></div>
           </div>
         </div>
@@ -45,6 +65,8 @@
         <div class="card">
           <div class="head">
             <h2>공격 커버리지</h2>
+
+            <!-- 배율 범례 -->
             <div class="legend">
               <span class="pill">미커버(2× 불가) 타입 열은 <b>배경 하이라이트</b>됩니다.</span>
               <span class="muted">배율:</span>
@@ -56,50 +78,51 @@
           </div>
 
           <div class="body">
+            <!-- 주요 지표 (JS에서 수치 갱신) -->
             <div class="kpis">
-              <div class="kpi"><span class="muted">2×로 때릴 수 있는 타입</span><strong id="atkStrongCount">0 / 18</strong></div>
-              <div class="kpi"><span class="muted">2× 불가 타입</span><strong id="atkHolesCount">18</strong></div>
-              <div class="kpi"><span class="muted">선택한 공격 속성</span><strong id="atkTypesCount">0</strong></div>
+              <div class="kpi">
+                <span class="muted">2×로 때릴 수 있는 타입</span>
+                <strong id="atkStrongCount" aria-live="polite" aria-atomic="true">0 / 18</strong>
+              </div>
+
+              <div class="kpi">
+                <span class="muted">2× 불가 타입</span>
+                <strong id="atkHolesCount" aria-live="polite" aria-atomic="true">18</strong>
+              </div>
+
+              <div class="kpi">
+                <span class="muted">선택한 공격 속성</span>
+                <strong id="atkTypesCount" aria-live="polite" aria-atomic="true">0</strong>
+              </div>
             </div>
+
+            <!-- 2× 커버 리스트 / 보완 추천 -->
             <div class="list" id="atkStrongList"></div>
             <div class="hole-block" id="holeSuggest"></div>
-            <div class="footer">아래 표의 마지막 행 <b>전체</b>는 팀의 모든 공격 속성 중 가장 유리한 배율을 표시합니다.</div>
-            <div class="table-wrap" style="margin-top:10px">
+
+            <div class="footer">
+              아래 표의 마지막 행 <b>전체</b>는 팀의 모든 공격 속성 중 가장 유리한 배율을 표시합니다.
+            </div>
+
+            <!-- 공격 커버리지 표 (JS에서 컬럼/행 생성) -->
+            <div class="table-wrap" style="margin-top: 10px">
               <table id="attackTable"></table>
             </div>
           </div>
         </div>
-
-        <!-- 방어 취약점 
-        <div class="card">
-          <div class="head">
-            <h2>방어 취약점</h2>
-            <div class="legend">
-              <span class="muted">팀 기준 집계: 4×, 2×, 1×, 0.5×, 0.25×, 0×</span>
-            </div>
-          </div>
-          <div class="body">
-            <div class="kpis">
-              <div class="kpi"><span class="muted">4× 취약 보유</span><strong id="defFourCount">0 타입</strong></div>
-              <div class="kpi"><span class="muted">2× 취약 보유</span><strong id="defTwoCount">0 타입</strong></div>
-              <div class="kpi"><span class="muted">면역(0×) 보유</span><strong id="defImmuneCount">0 타입</strong></div>
-            </div>
-            <div class="list" id="defWeakList"></div>
-            <div class="table-wrap" style="margin-top:10px">
-              <table id="defenseTable"></table>
-            </div>
-          </div>
-        </div>
-        -->
       </div>
 
-      <!-- 우측 사이드 -->
+      <!-- ===== 우측 사이드 ===== -->
       <aside class="side">
+        <!-- 남은 속성 목록 -->
         <div class="card">
           <div class="head"><h2>남은 속성</h2></div>
-          <div class="body"><div class="list" id="remainingTypes"></div></div>
+          <div class="body">
+            <div class="list" id="remainingTypes"></div>
+          </div>
         </div>
 
+        <!-- 사용 방법 요약 -->
         <div class="card">
           <div class="head"><h2>간단 설명</h2></div>
           <div class="body">
@@ -107,8 +130,8 @@
               <li><b>공격 커버</b>: 2×로 못 때리는 타입을 열 하이라이트, 보완 공격 속성을 칩으로 제안.</li>
               <li><b>방어 취약</b>: 팀 기준 약점을 표/카운트로 집계.</li>
               <li><b>개별 슬롯</b>: 좌측 검색 시 타입 자동 적용, 또는 우측에서 직접 선택.</li>
-              <li><b>공유/보기</b>: URL 복사·인쇄·라이트/다크·색각친화.</li>
-              <li><b>추천(남은 자리)</b>: 옵션(개수, 중복 최소화, 스피드, 역할) 선택 후 점수순 후보 제시.
+              <li>
+                <b>추천(남은 자리)</b>: 옵션(개수, 중복 최소화, 스피드, 역할) 선택 후 점수순 후보 제시.
                 <ul>
                   <li><b>추천 생성</b>은 리스트 표시, <b>자동 배치</b>는 상위 후보를 빈 슬롯에 즉시 배치.</li>
                   <li>점수 기준: 미커버 2× 가산, 팀 약점 저항/면역 가산, 역할·태그 일치 가산, 스피드/BST 소폭 가산, 과도한 타입 중복 감점.</li>
@@ -122,72 +145,94 @@
         <div class="card" id="recoCard">
           <div class="head">
             <h2>추천 (남은 자리)</h2>
+
+            <!-- 추천 액션 -->
             <div class="controls">
-              <button id="recoBtn" class="btn">추천 생성</button>
-              <button id="recoRandomBtn" class="btn" title="가중 랜덤으로 후보 생성">랜덤 생성</button>
+              <button id="recoBtn" class="btn" type="button">추천 생성</button>
+              <button id="recoRandomBtn" class="btn" type="button" title="가중 랜덤으로 후보 생성">랜덤 생성</button>
             </div>
           </div>
+
           <div class="body">
+            <!-- 추천 옵션 -->
             <div class="reco-controls">
               <div class="reco-count">
-                <label>개수
+                <label>
+                  개수
                   <select id="recoCount">
-                    <option value="1">1개</option><option value="2">2개</option>
-                    <option value="3">3개</option><option value="4">4개</option>
-                    <option value="5">5개</option><option value="6">6개</option>
+                    <option value="1">1개</option>
+                    <option value="2">2개</option>
+                    <option value="3">3개</option>
+                    <option value="4">4개</option>
+                    <option value="5">5개</option>
+                    <option value="6">6개</option>
                   </select>
                 </label>
               </div>
 
-              <label class="reco-dedup"><input type="checkbox" id="recoMinDup" checked> 타입 중복 최소화</label>
-              <label class="reco-speed"><input type="checkbox" id="recoSpeed" checked> 스피드 우선</label>
+              <label class="reco-dedup">
+                <input type="checkbox" id="recoMinDup" checked />
+                타입 중복 최소화
+              </label>
+
+              <label class="reco-speed">
+                <input type="checkbox" id="recoSpeed" checked />
+                스피드 우선
+              </label>
 
               <div class="reco-roles">
                 <span class="muted">우선 역할:</span>
-                <label><input type="checkbox" class="roleChk" value="physical" checked> 물리</label>
-                <label><input type="checkbox" class="roleChk" value="special"  checked> 특수</label>
+                <label><input type="checkbox" class="roleChk" value="physical" checked /> 물리</label>
+                <label><input type="checkbox" class="roleChk" value="special"  checked /> 특수</label>
               </div>
             </div>
 
+            <!-- 보완 타입(미커버/방어취약) 필터 칩 -->
             <div class="reco-filters">
               <div class="chip-group">
                 <span class="pill"><b>미커버</b></span>
                 <div id="recoHoleTypes" class="chipline"></div>
               </div>
+
               <div class="chip-group">
                 <span class="pill"><b>방어 취약</b></span>
                 <div id="recoWeakTypes" class="chipline"></div>
               </div>
             </div>
 
+            <!-- 추천 근거 설명 / 후보 리스트 -->
             <div class="list" id="recoReasons"></div>
             <div id="recoList" class="reco-list"></div>
           </div>
-        </div>
-
         </div>
       </aside>
     </div>
   </main>
 
-  <!-- 포켓몬 검색용 datalist -->
+  <!-- 포켓몬 검색용 datalist (입력 자동완성 소스) -->
   <datalist id="pokedexList"></datalist>
 
+  <!-- ===== 앱 스크립트 ===== -->
   <script type="module">
+    // 외부 모듈에서 상수/유틸/앱 부트스트랩 로드
     import { TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK } from './src/types.js';
     import { effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode } from './src/effects.js';
     import { bootstrapApp, adjustHeaderSpacer } from './src/app.js';
     import { loadPokedex, recommendGreedy, explainCandidate, autoTags } from './src/reco.js';
 
+    // 앱 초기화 (전역 상태 설정 및 이벤트 바인딩 포함)
     bootstrapApp({
       TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK,
       effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode,
       reco: { loadPokedex, recommendGreedy, explainCandidate, autoTags }
     });
 
+    // 헤더 고정 높이에 맞춰 컨텐츠 오프셋 조정
     adjustHeaderSpacer();
     window.addEventListener('resize', adjustHeaderSpacer);
   </script>
 
+  <!-- JS 미동작 환경 안내 -->
+  <noscript>이 페이지는 자바스크립트가 필요합니다. 브라우저 설정에서 스크립트를 허용해주세요.</noscript>
 </body>
 </html>
