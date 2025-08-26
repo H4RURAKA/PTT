@@ -4,7 +4,7 @@ import { computeAttack, computeDefense, coverTypesFor } from './compute.js';
 import {
   buildTeamBoard, reflectChips, renderSlotMini,
   renderAttackSummary, renderAttackTable, renderAttackRows, applyAttackHighlight, renderHoleSuggestions,
-  /* renderDefenseSummary, */ renderDefenseTable, renderRemaining
+  /* renderDefenseSummary, renderDefenseTable, renderRemaining */
 } from './render.js';
 import { wireHeaderButtons, adjustHeaderSpacer as _adjustHeaderSpacer } from './ui.js';
 
@@ -259,7 +259,7 @@ export function bootstrapApp(ctx){
 
   // ===== 전체 갱신 =====
   function updateAll(){
-    renderRemaining(typeCounterEl, remainingEl, team, TYPES, TYPE_LABEL, TYPE_COLOR);
+    // renderRemaining(typeCounterEl, remainingEl, team, TYPES, TYPE_LABEL, TYPE_COLOR);
 
     // 공격 표/지표
     const atk = computeAttack(ATK, TYPES, team, effect);
@@ -445,6 +445,9 @@ export function bootstrapApp(ctx){
 
     const picks = ctx.reco.recommendGreedy(env, POKEDEX, team, K, currentRecoOptionsComputed);
     renderRecoList(picks);
+    adjustRecoScroller();
+    window.addEventListener('resize', adjustRecoScroller, { passive:true });
+    window.addEventListener('scroll',  adjustRecoScroller, { passive:true });
   }
 
   async function runRecommendRandom(K){
@@ -479,6 +482,9 @@ export function bootstrapApp(ctx){
       picks = many.slice(0, K);
     }
     renderRecoList(picks);
+    adjustRecoScroller();
+    window.addEventListener('resize', adjustRecoScroller, { passive:true });
+    window.addEventListener('scroll',  adjustRecoScroller, { passive:true });
   }
 
   // 버튼 바인딩
@@ -537,3 +543,30 @@ export function bootstrapApp(ctx){
 }
 
 export const adjustHeaderSpacer = _adjustHeaderSpacer;
+
+// 좌측 메인 칼럼(bottom) 기준으로 추천 카드 높이 보정
+function adjustRecoScroller(){
+  const card = document.getElementById('recoCard');
+  if (!card) return;
+
+  const head = card.querySelector('.head');
+  const body = card.querySelector('.body');
+
+  const cardRect = card.getBoundingClientRect();
+
+  // 기준: 좌측 메인 칼럼의 '바닥' (없는 경우 뷰포트 바닥)
+  const main = document.querySelector('.main');
+  const mainBottom = main ? main.getBoundingClientRect().bottom : window.innerHeight+1000;
+
+  // 좌측 끝까지 카드가 차지할 수 있는 최대 높이
+  // (안전마진 16px, 최소 200px 보장, 1열 레이아웃(모바일)에서는 viewport를 자동 상한으로 사용)
+  const byLeft = mainBottom - cardRect.top - 16;
+  const byViewport = window.innerHeight - cardRect.top - 16;
+  const avail = Math.max(200, Math.min(byLeft, Math.max(byViewport, 0)));
+
+  // CSS 변수로 내려주면 styles.css의 max-height들이 따라 감
+  card.style.setProperty('--reco-max', `${avail}px`);
+
+  const headH = head ? head.offsetHeight : 56;
+  body.style.setProperty('--reco-body-max', `${Math.max(120, avail - headH - 8)}px`);
+}

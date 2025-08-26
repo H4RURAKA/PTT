@@ -114,27 +114,29 @@
 
       <!-- ===== 우측 사이드 ===== -->
       <aside class="side">
-        <!-- 남은 속성 목록 -->
+        <!-- 남은 속성 목록
         <div class="card">
           <div class="head"><h2>남은 속성</h2></div>
           <div class="body">
             <div class="list" id="remainingTypes"></div>
           </div>
         </div>
+        -->
 
         <!-- 사용 방법 요약 -->
         <div class="card">
           <div class="head"><h2>간단 설명</h2></div>
-          <div class="body">
+          <div class="body explain">
             <ul>
-              <li><b>공격 커버</b>: 2×로 못 때리는 타입을 열 하이라이트, 보완 공격 속성을 칩으로 제안.</li>
-              <li><b>방어 취약</b>: 팀 기준 약점을 표/카운트로 집계.</li>
-              <li><b>개별 슬롯</b>: 좌측 검색 시 타입 자동 적용, 또는 우측에서 직접 선택.</li>
+              <li><b>공격 커버</b>: 2×로 못 때리는 타입을 열 하이라이트, 보완 가능한 공격 속성 제안</li>
+              <li><b>방어 취약</b>: 팀 기준 약점을 표/카운트로 집계</li>
+              <li><b>개별 슬롯</b>: 포켓몬 검색 시 타입 자동 적용, 또는 우측에서 직접 선택가능</li>
               <li>
-                <b>추천(남은 자리)</b>: 옵션(개수, 중복 최소화, 스피드, 역할) 선택 후 점수순 후보 제시.
+                <b>추천(남은 자리)</b>: 옵션(개수, 타입 중복 최소화, 스피드, 역할) 선택 후 점수순 후보 제시
+                <br>스크롤하여 더 많은 추천 포켓몬 확인 가능
                 <ul>
-                  <li><b>추천 생성</b>은 리스트 표시, <b>자동 배치</b>는 상위 후보를 빈 슬롯에 즉시 배치.</li>
-                  <li>점수 기준: 미커버 2× 가산, 팀 약점 저항/면역 가산, 역할·태그 일치 가산, 스피드/BST 소폭 가산, 과도한 타입 중복 감점.</li>
+                  <li><b>추천 생성</b>은 리스트 표시, <b>자동 배치</b>는 상위 후보를 빈 슬롯에 즉시 배치</li>
+                  <li>점수 기준: 미커버 2× 가산, 팀 약점 저항/면역 가산, 역할 일치 가산, 스피드/BST 소폭 가산, 과도한 타입 중복 감점</li>
                 </ul>
               </li>
             </ul>
@@ -160,7 +162,7 @@
                 <label>
                   추천받을 개수: 
                   <label class="count-field">
-                    <input id="recoCount" type="number" min="1" max="10" step="1" value="1-6" inputmode="numeric" />
+                    <input id="recoCount" type="number" min="1" max="10" step="1" value="6" inputmode="numeric" />
                   </label>
                 </label>
               </div>

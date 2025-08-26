@@ -75,7 +75,8 @@ header{
   padding:16px; border-bottom:1px dashed var(--border);
 }
 .card h2{ margin:0 0 8px; font-size:16px; }
-.card .body{ padding:16px; }
+.card .body{ padding: 16px; }
+.card .body.explain{ padding: 4px 16px 4px 0px; }
 
 /* ===== Controls ===== */
 .controls{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
@@ -281,6 +282,28 @@ thead th.hole-col{ background: color-mix(in oklab, var(--warn) 28%, var(--surfac
 #recoReasons{ margin:0; padding:0; min-height:0; }
 .reco-filters .chip-group{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .chipline{ display:flex; flex-wrap:wrap; gap:6px; }
+
+/* 추천 카드: 전체 카드/바디를 분리해서 바디만 스크롤 */
+#recoCard{
+  display: flex;
+  flex-direction: column;
+  /* JS가 계산해 주는 최대 높이. 미지원/초기엔 대략값 */
+  --reco-max: 70vh;
+  max-height: var(--reco-max);
+}
+
+#recoCard .head{ flex: 0 0 auto; }
+#recoCard .body{
+  flex: 1 1 auto;
+  overflow: auto;                 /* 바디 영역만 스크롤 */
+  /* JS가 계산해 주는 바디 최대 높이. 초기엔 카드 높이에서 헤더값 대략 차감 */
+  --reco-body-max: calc(var(--reco-max) - 64px);
+  max-height: var(--reco-body-max);
+}
+
+/* 우측 칼럼은 항상 상단 정렬 */
+.side{ align-self: start; }
+
 
 .reco-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
 .pkm-card{
