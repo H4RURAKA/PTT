@@ -1,43 +1,47 @@
-// 공통 유틸
-export const round = (x)=> (Math.round(x*100)/100);
+// 상성 계산, 배율 클래스, URL 인코딩/디코딩
 
 export function effect(ATK, atk, def){
-  return ATK[atk][def] ?? 1;
+  if (!atk || !def) return 1;
+  const row = ATK[atk] || {};
+  return row[def] ?? 1;
 }
 
-export function combinedDefenseMultiplier(ATK, attacking, type1, type2=''){
-  const m1 = type1? effect(ATK, attacking, type1) : 1;
-  const m2 = type2? effect(ATK, attacking, type2) : 1;
-  return round(m1 * m2);
+export function combinedDefenseMultiplier(ATK, atk, def1, def2){
+  const m1 = def1 ? effect(ATK, atk, def1) : 1;
+  const m2 = def2 ? effect(ATK, atk, def2) : 1;
+  return Number((m1 * m2).toFixed(2));
 }
 
 export function effClass(m){
-  return m===0? 'eff-0'
-    : (m===0.25? 'eff-25'
-    : (m===0.5? 'eff-50'
-    : (m===1? 'eff-100'
-    : (m===2? 'eff-200' : 'eff-400'))));
+  if (m === 0) return 'eff-0';
+  if (m === 0.25) return 'eff-25';
+  if (m === 0.5) return 'eff-50';
+  if (m === 1) return 'eff-100';
+  if (m === 2) return 'eff-200';
+  if (m >= 4) return 'eff-400';
+  return 'eff-100';
 }
 
-// URL 상태 인코딩/디코딩 (이름 포함)
-export function qsEncode(state){
-  const params = new URLSearchParams();
-  const { team, theme, cvd } = state;
-  const slots = team.map(({t1,t2})=>[t1||'',t2||''].filter(Boolean).join('+'));
-  const names = team.map(({name})=> encodeURIComponent(name||''));
-  params.set('slots', slots.join('|'));
-  params.set('names', names.join('|'));
-  params.set('theme', theme);
-  params.set('cvd', cvd);
-  return params.toString();
+// --- URL state: slots & names & theme/cvd ---
+
+export function qsEncode({ team, theme, cvd }){
+  const slots = team.map(s => [s.t1, s.t2].filter(Boolean).join('+')).join('|');
+  const names = team.map(s => encodeURIComponent(s.name || '')).join('|');
+  const q = new URLSearchParams();
+  if (slots) q.set('slots', slots);
+  if (names) q.set('names', names);
+  if (theme) q.set('theme', theme);
+  if (cvd)   q.set('cvd', cvd);
+  return q.toString();
 }
 
 export function qsDecode(){
-  const p = new URLSearchParams(location.search);
+  const q = new URLSearchParams(location.search);
+  const slots = (q.get('slots') || '').split('|').filter(Boolean);
+  const names = (q.get('names') || '').split('|').map(decodeURIComponent);
   return {
-    theme: p.get('theme') || null,
-    cvd: p.get('cvd') || null,
-    slots: (p.get('slots')||'').split('|'),
-    names: (p.get('names')||'').split('|').map(s=> decodeURIComponent(s)),
+    slots, names,
+    theme: q.get('theme') || '',
+    cvd: q.get('cvd') || ''
   };
 }

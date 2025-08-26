@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>포켓몬 속성 계산표 · 팀 커버리지 / 약점 분석기</title>
+  <title>포켓몬 속성 계산표</title>
   <link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
@@ -21,15 +21,14 @@
           <button id="printBtn" class="btn" title="인쇄">인쇄</button>
         </div>
       </div>
-      <div class="sub">팀(최대 6마리)의 속성을 직접 선택하면, 공격 커버리지와 방어 취약점을 자동 계산합니다. 각 슬롯은 최대 2속성까지 선택 가능합니다.</div>
+      <div class="sub">팀(최대 6마리)의 속성을 직접 선택하거나, 포켓몬을 검색해서 타입을 적용하세요. 각 슬롯은 최대 2속성까지 선택 가능합니다.</div>
     </div>
   </header>
-  <!-- 헤더 높이만큼 간격 확보 -->
   <div id="header-spacer"></div>
 
   <main class="container">
     <div class="grid grid-wide-right">
-      <!-- 좌측 메인 칼럼 -->
+      <!-- 좌측 메인 -->
       <div class="main">
         <!-- 팀 구성 -->
         <div class="card">
@@ -95,35 +94,97 @@
       <aside class="side">
         <div class="card">
           <div class="head"><h2>남은 속성</h2></div>
-          <div class="body">
-            <div class="list" id="remainingTypes"></div>
-          </div>
+          <div class="body"><div class="list" id="remainingTypes"></div></div>
         </div>
 
         <div class="card">
-          <div class="head"><h2>추가 분석</h2></div>
+          <div class="head"><h2>간단 설명</h2></div>
           <div class="body">
             <ul>
-              <li><b>공격 커버 미흡</b>: 2×로 때릴 수 없는 타입을 열 하이라이트로 표시하고, 보완 가능한 속성을 제안합니다.</li>
-              <li><b>방어 중첩 약점</b>: 팀 기준 4× 또는 2× 약점이 많은 공격 타입을 강조합니다.</li>
-              <li><b>개별 슬롯 약점/저항</b>: 각 슬롯 아래에 4×, 2×, 0×, 0.25×, 0.5× 요약 칩을 제공합니다.</li>
-              <li><b>면역/저항</b>: 팀에 존재하는 면역(0×) 및 강한 저항(0.25×, 0.5×)도 표에 집계합니다.</li>
-              <li><b>공유/저장</b>: 상단의 URL 복사 버튼으로 현재 구성을 공유할 수 있습니다.</li>
+              <li><b>공격 커버</b>: 2×로 못 때리는 타입을 열 하이라이트, 보완 공격 속성을 칩으로 제안.</li>
+              <li><b>방어 취약</b>: 팀 기준 약점을 표/카운트로 집계.</li>
+              <li><b>개별 슬롯</b>: 좌측 검색 시 타입 자동 적용, 또는 우측에서 직접 선택.</li>
+              <li><b>공유/보기</b>: URL 복사·인쇄·라이트/다크·색각친화.</li>
+              <li><b>추천(남은 자리)</b>: 옵션(개수, 중복 최소화, 스피드, 역할) 선택 후 점수순 후보 제시.
+                <ul>
+                  <li><b>추천 생성</b>은 리스트 표시, <b>자동 배치</b>는 상위 후보를 빈 슬롯에 즉시 배치.</li>
+                  <li>점수 기준: 미커버 2× 가산, 팀 약점 저항/면역 가산, 역할·태그 일치 가산, 스피드/BST 소폭 가산, 과도한 타입 중복 감점.</li>
+                </ul>
+              </li>
             </ul>
           </div>
+        </div>
+
+        <!-- 추천 (남은 자리) -->
+        <div class="card" id="recoCard">
+          <div class="head">
+            <h2>추천 (남은 자리)</h2>
+            <div class="controls">
+              <button id="recoBtn" class="btn">추천 생성</button>
+              <button id="recoRandomBtn" class="btn" title="가중 랜덤으로 후보 생성">랜덤 생성</button>
+            </div>
+          </div>
+          <div class="body">
+            <div class="reco-controls">
+              <div class="reco-count">
+                <label>개수
+                  <select id="recoCount">
+                    <option value="1">1개</option><option value="2">2개</option>
+                    <option value="3">3개</option><option value="4">4개</option>
+                    <option value="5">5개</option><option value="6">6개</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="reco-dedup"><input type="checkbox" id="recoMinDup" checked> 타입 중복 최소화</label>
+              <label class="reco-speed"><input type="checkbox" id="recoSpeed" checked> 스피드 우선</label>
+
+              <div class="reco-roles">
+                <span class="muted">우선 역할:</span>
+                <label><input type="checkbox" class="roleChk" value="physical" checked> 물리</label>
+                <label><input type="checkbox" class="roleChk" value="special"  checked> 특수</label>
+              </div>
+            </div>
+
+            <div class="reco-filters">
+              <div class="chip-group">
+                <span class="pill"><b>미커버</b></span>
+                <div id="recoHoleTypes" class="chipline"></div>
+              </div>
+              <div class="chip-group">
+                <span class="pill"><b>방어 취약</b></span>
+                <div id="recoWeakTypes" class="chipline"></div>
+              </div>
+            </div>
+
+            <div class="list" id="recoReasons"></div>
+            <div id="recoList" class="reco-list"></div>
+          </div>
+        </div>
+
         </div>
       </aside>
     </div>
   </main>
 
+  <!-- 포켓몬 검색용 datalist -->
+  <datalist id="pokedexList"></datalist>
+
   <script type="module">
     import { TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK } from './src/types.js';
     import { effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode } from './src/effects.js';
     import { bootstrapApp, adjustHeaderSpacer } from './src/app.js';
+    import { loadPokedex, recommendGreedy, explainCandidate, autoTags } from './src/reco.js';
 
-    bootstrapApp({ TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK, effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode });
+    bootstrapApp({
+      TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK,
+      effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode,
+      reco: { loadPokedex, recommendGreedy, explainCandidate, autoTags }
+    });
+
     adjustHeaderSpacer();
     window.addEventListener('resize', adjustHeaderSpacer);
   </script>
+
 </body>
 </html>

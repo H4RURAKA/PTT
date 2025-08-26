@@ -25,129 +25,222 @@
 [data-cvd="1"] { --accent:#7e57c2; --eff-0:#1b1b1b; --eff-25:#2b5797; --eff-50:#1d6f42; --eff-100:#404040; --eff-200:#b03030; --eff-400:#7c2a8a; }
 
 /* ===== Global ===== */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  margin: 0;
+*{ box-sizing:border-box }
+html,body{ height:100% }
+body{
+  margin:0;
   background: radial-gradient(1200px 800px at 20% -10%, rgba(79,140,255,.08), transparent 60%),
               radial-gradient(800px 600px at 100% 0%, rgba(16,185,129,.06), transparent 60%),
               var(--bg);
-  color: var(--text);
-  font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+  color:var(--text);
+  font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
 }
 
-/* ===== Fixed Header ===== */
-header{
-  position:fixed; top:0; left:0; right:0; z-index:1000;
-  backdrop-filter:saturate(180%) blur(8px);
-  background: color-mix(in oklab, var(--bg) 85%, transparent);
-  border-bottom:1px solid var(--border);
-}
-#header-spacer{ height: 120px; }
-.wrap { max-width: 1200px; margin: 0 auto; padding: 16px 20px; }
-.app-title { display:flex; align-items:center; gap:12px; }
-.app-title h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
-.sub { color: var(--muted); font-size: 12px; }
+/* ===== Header ===== */
+header{ position:fixed; top:0; left:0; right:0; z-index:1000; backdrop-filter:saturate(180%) blur(8px);
+  background: color-mix(in oklab, var(--bg) 85%, transparent); border-bottom:1px solid var(--border); }
+#header-spacer{ height:120px }
+.wrap{ max-width:1200px; margin:0 auto; padding:16px 20px }
+.app-title{ display:flex; align-items:center; gap:12px }
+.app-title h1{ margin:0; font-size:18px }
+.sub{ color:var(--muted); font-size:12px }
 
 /* ===== Layout ===== */
-.container { max-width: 1200px; margin: 16px auto 64px; padding: 0 20px; }
-.grid { display: grid; gap: 16px; }
-.grid-wide-right{ grid-template-columns: minmax(0,3fr) minmax(0,1.1fr); }
-@media (max-width: 1024px) { .grid-wide-right { grid-template-columns: 1fr; } }
+.container{ max-width:1200px; margin:16px auto 64px; padding:0 20px }
+.grid{ display:grid; gap:16px }
+.grid-wide-right{ grid-template-columns: minmax(0, 1fr) 320px; }
+@media (max-width:1180px){ .grid-wide-right{ grid-template-columns:1fr } }
+.grid-wide-right > .main, .grid-wide-right > .side, .card, .card .body, .table-wrap{ min-width:0 }
+.main{ display:grid; gap:16px }
 
-.grid-wide-right > .main,
-.grid-wide-right > .side,
-.card,
-.card .body,
-.table-wrap { min-width: 0; }
-
-.main{ display:grid; gap:16px; }
-
-/* ===== Cards ===== */
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
-.card h2 { font-size: 16px; margin: 0 0 8px; }
-.card .head { display:flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px dashed var(--border); }
-.card .body { padding: 16px; }
+/* ===== Card ===== */
+.card{ background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow) }
+.card .head{ display:flex; justify-content:space-between; align-items:center; padding:16px; border-bottom:1px dashed var(--border) }
+.card h2{ margin:0 0 8px; font-size:16px }
+.card .body{ padding:16px }
 
 /* ===== Controls ===== */
-.controls { display:flex; flex-wrap: wrap; gap:8px; align-items:center; }
-.btn { border:1px solid var(--border); background:var(--surface); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
-.btn:hover { background: color-mix(in oklab, var(--surface) 80%, var(--accent)); border-color: color-mix(in oklab, var(--border) 60%, var(--accent)); }
-.right { margin-left: auto; }
-.muted { color: var(--muted); }
+.controls{ display:flex; flex-wrap:wrap; gap:8px; align-items:center }
+.btn{ border:1px solid var(--border); background:var(--surface); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600 }
+.btn:hover{ background: color-mix(in oklab, var(--surface) 80%, var(--accent)); border-color: color-mix(in oklab, var(--border) 60%, var(--accent)) }
+.right{ margin-left:auto }
+.muted{ color:var(--muted) }
 
-/* ===== Team board (6 rows) ===== */
-.team-board { display:grid; grid-template-rows: repeat(6, auto); gap:12px; }
-.slot { padding: 10px 12px; border-radius: 12px; border: 1px dashed var(--border); background: var(--surface); display:flex; flex-direction: column; gap:8px; }
-.slot .top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.slot h3 { margin:0; font-size: 13px; color: var(--muted); }
-.slot input.name { flex:1; min-width:160px; max-width:100%; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--text); }
-.slot .actions { margin-left:auto; display:flex; gap:6px; }
-.slot .mini { display:flex; flex-wrap:wrap; gap:6px; }
+/* ===== Team board ===== */
+.team-board{ display:grid; grid-template-rows:repeat(6,auto); gap:12px }
+.slot{ padding:12px; border-radius:12px; border:1px dashed var(--border); background:var(--surface); display:flex; flex-direction:column; gap:10px }
 
-/* ===== Type chips (3×6 equal grid) ===== */
-.chip-row { display:grid; gap:4px; grid-template-columns: repeat(6, minmax(0, 1fr)); padding-inline: 6px; }
-.chip {
-  display:flex; align-items:center; gap:8px; justify-content:center;
-  padding:8px 10px; border-radius: 12px; border:1px solid var(--border);
-  background: var(--chip); cursor:pointer; user-select:none; font-weight:700; letter-spacing:.2px; color: var(--text);
-  width:100%;
+/* 헤더: 좌측 제목, 우측 버튼 */
+.slot .top{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
 }
-.chip.sm { padding:5px 6px; border-radius:10px; font-weight:700; }
-.chip .dot { width: 9px; height: 9px; border-radius:999px; border:1px solid rgba(0,0,0,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
-.chip.active { outline: 2px solid var(--accent); background: color-mix(in oklab, var(--chip) 70%, var(--accent)); color: var(--chip-active-text) !important; }
+.slot h3{ margin:0; font-size:13px; color:var(--muted) }
+.slot .actions{ display:flex; gap:6px }
+
+/* === 기본: 2 : 1 : 6 (선택/별명 : 스프라이트 : 타입) === */
+.slot-grid{
+  display:grid;
+  grid-template-columns: 2fr 1fr minmax(560px, 6fr);
+  gap:12px;
+  align-items:start;
+}
+
+/* === 스프라이트가 없을 때: 가운데 칸 제거, 좌측을 3fr로 확장 === */
+.slot.no-sprite .slot-grid{
+  grid-template-columns: 3fr minmax(560px, 6fr);
+}
+.slot.no-sprite .slot-sprite{ display:none; }
+
+/* --- 스프라이트 썸네일 --- */
+.slot-left{ display:flex; flex-direction:column; gap:8px; }
+
+.slot-sprite{
+  display:flex; align-items:center; justify-content:center; padding-top:4px;
+}
+.slot .sprite{
+  width:72px; height:72px; object-fit:contain;
+  image-rendering: pixelated;
+  background: var(--surface); border:1px solid var(--border);
+  border-radius:12px; padding:6px; display:none; cursor: zoom-in;
+}
+
+.slot input.name, .slot input.search{
+  width:100%; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--text)
+}
+
+@media (max-width: 980px){
+  .slot-grid{ grid-template-columns: 1fr; }
+  .slot-sprite{ justify-content:flex-start; }
+}
+
+/* 타입칩 그리드 */
+.slot-right{ min-width:0; }            /* 오버플로 방지 */
+.chip-row{ display:grid; gap:4px; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.chip{
+  display:flex; align-items:center; gap:8px; justify-content:center;
+  padding:8px 10px; border-radius:12px; border:1px solid var(--border);
+  background:var(--chip); cursor:pointer; user-select:none; font-weight:700; letter-spacing:.2px; color:var(--text)
+}
+.chip .dot{ width:9px; height:9px; border-radius:999px; border:1px solid rgba(0,0,0,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18) }
+.chip.active{ outline:2px solid var(--accent); background: color-mix(in oklab, var(--chip) 70%, var(--accent)); color:var(--chip-active-text)!important }
+
+/* 하단 요약: 위/아래 구분선 + 두 줄 */
+.mini{ display:flex; flex-direction:column; gap:8px; padding-top:10px; border-top:1px dashed var(--border) }
+.meta-row{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
+.weak-row{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
+.stat-pill{ font-variant-numeric:tabular-nums }
+
+/* 공통 pill */
+.pill{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid var(--border); border-radius:999px; background:var(--surface) }
 
 /* ===== Tables ===== */
-.table-wrap { overflow:auto; border:1px solid var(--border); border-radius: 12px; }
-/* sticky 첫열이 잘 동작하도록 separate 사용 + 고정 레이아웃 */
-table { border-collapse: separate; border-spacing:0; width: 100%; table-layout: fixed; font-variant-numeric: tabular-nums; }
-th, td { padding: 8px 10px; border-bottom: 1px solid var(--table-grid); white-space: nowrap; text-align:center; }
-thead th { position: sticky; top: 0; background: var(--surface); z-index:2; }
-tbody tr:last-child td { border-bottom: 0; }
-tbody tr:hover td { background: color-mix(in oklab, var(--surface) 85%, var(--accent)); }
-/* 첫 번째 열 고정 */
-.sticky-col { position: sticky; left: 0; background: var(--surface); border-right:1px solid var(--table-grid); z-index:3; text-align:left; }
-thead th.sticky-col{ z-index:4; }
-thead th:first-child{ position:sticky; left:0; top:0; z-index:8; background:var(--surface); }
-
-
-/* 공격/방어 표 최소 너비 지정 → 컨테이너보다 넓으면 가로 스크롤 */
-#attackTable{ min-width: 1100px; }
-#defenseTable{ min-width: 800px; }
-/* 첫 열 고정폭 */
-#attackTable th:first-child, #attackTable td:first-child,
-#defenseTable th:first-child, #defenseTable td:first-child{ width:120px; }
+.table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px }
+table{ border-collapse:separate; border-spacing:0; width:100%; table-layout:fixed; font-variant-numeric:tabular-nums }
+th,td{ padding:8px 10px; border-bottom:1px solid var(--table-grid); white-space:nowrap; text-align:center }
+thead th{ position:sticky; top:0; background:var(--surface); z-index:2 }
+tbody tr:last-child td{ border-bottom:0 }
+tbody tr:hover td{ background: color-mix(in oklab, var(--surface) 85%, var(--accent)) }
+.sticky-col{ position:sticky; left:0; background:var(--surface); border-right:1px solid var(--table-grid); z-index:3; text-align:left }
+thead th.sticky-col{ z-index:4 }
+#attackTable{ min-width:1100px } #defenseTable{ min-width:800px }
+#attackTable th:first-child,#attackTable td:first-child,
+#defenseTable th:first-child,#defenseTable td:first-child{ width:120px }
 
 /* Eff chips */
-.eff { border-radius: 8px; padding: 4px 6px; font-weight: 700; display:inline-block; min-width: 40px; }
-.eff-0 { background:var(--eff-0); color:#ddd; }
-.eff-25 { background:var(--eff-25); color:#cfe3ff; }
-.eff-50 { background:var(--eff-50); color:#c9ffe6; }
-.eff-100 { background:var(--eff-100); color:#d7deea; }
-.eff-200 { background:var(--eff-200); color:#ffcdcd; }
-.eff-400 { background:var(--eff-400); color:#ffd9ff; }
+.eff{ border-radius:8px; padding:4px 6px; font-weight:700; display:inline-block; min-width:40px }
+.eff-0{ background:var(--eff-0); color:#ddd } .eff-25{ background:var(--eff-25); color:#cfe3ff }
+.eff-50{ background:var(--eff-50); color:#c9ffe6 } .eff-100{ background:var(--eff-100); color:#d7deea }
+.eff-200{ background:var(--eff-200); color:#ffcdcd } .eff-400{ background:var(--eff-400); color:#ffd9ff }
+.hole-col{ background: color-mix(in oklab, var(--warn) 20%, var(--surface))!important }
+thead th.hole-col{ background: color-mix(in oklab, var(--warn) 28%, var(--surface))!important }
 
-/* 공격 커버리지에서 미커버 컬럼 하이라이트 */
-.hole-col { background: color-mix(in oklab, var(--warn) 20%, var(--surface)) !important; }
-thead th.hole-col { background: color-mix(in oklab, var(--warn) 28%, var(--surface)) !important; }
+/* KPI / Recommendation */
+.kpis{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:10px }
+.kpi{ background:var(--surface); border:1px solid var(--border); padding:10px; border-radius:12px; display:flex; align-items:center; gap:8px }
+.kpi strong{ font-size:18px }
 
-/* KPIs */
-.kpis { display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:10px; }
-.kpi { background: var(--surface); border:1px solid var(--border); padding:10px; border-radius:12px; display:flex; align-items:center; gap:8px; }
-.kpi strong { font-size: 18px; }
+.side{ display:flex; flex-direction:column; gap:16px }
+.list{ display:flex; flex-wrap:wrap; gap:6px }
+.footer{ color:var(--muted); font-size:12px; margin-top:10px }
+.hole-block{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px }
 
-/* Misc */
-.legend { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-.pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid var(--border); border-radius:999px; background: var(--surface); }
+.reco-controls{
+  display:grid;
+  gap:10px 12px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "count count"
+    "dedup speed"
+    "roles roles";
+  align-items:center;
+}
+.reco-controls .reco-count{ grid-area:count }
+.reco-controls .reco-dedup{ grid-area:dedup }
+.reco-controls .reco-speed{ grid-area:speed }
+.reco-controls .reco-roles{ grid-area:roles; display:flex; flex-wrap:wrap; gap:12px; align-items:center }
+.reco-controls select{ padding:6px 8px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text) }
+.reco-controls label{ display:flex; gap:6px; align-items:center; font-weight:600; white-space:nowrap }
 
-.side { display:flex; flex-direction: column; gap: 16px; }
-.list { display:flex; flex-wrap: wrap; gap: 6px; }
-.footer { color: var(--muted); font-size: 12px; margin-top: 10px; }
+@media (max-width:520px){
+  .reco-controls{
+    grid-template-columns:1fr;
+    grid-template-areas:"count" "dedup" "speed" "roles";
+  }
+}
 
-.hole-block { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.reco-filters{ display:grid; gap:8px; margin-top:8px; padding-bottom:10px; border-bottom:1px dashed var(--border); margin-bottom:12px; }
+#recoReasons{ margin:0; padding:0; min-height:0; }
+.reco-filters .chip-group{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+.chipline{ display:flex; flex-wrap:wrap; gap:6px }
 
-/* Responsive tightening */
-@media (max-width: 1200px){
-  .chip{ padding:4px 6px; font-size:12px; }
-  th,td{ padding:6px 6px; font-size:12px; }
+.reco-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px }
+.pkm-card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:10px }
+.pkm-card:not(:last-child){ margin-bottom:4px }
+
+.reco-list{ display:grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap:12px }
+.pkm-card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:10px }
+.pkm-title{ display:flex; align-items:center; justify-content:space-between }
+.pkm-title h3{ margin:0; font-size:14px }
+.pkm-types,.pkm-badges{ display:flex; flex-wrap:wrap; gap:6px; align-items:center }
+.pkm-actions{ display:flex; gap:8px }
+.pkm-actions .btn{ padding:6px 8px; font-weight:700 }
+.pill .dot{ width:9px; height:9px; border-radius:999px; border:1px solid rgba(0,0,0,.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,.18) }
+
+@media (max-width:1200px){
+  .chip{ padding:4px 6px; font-size:12px }
+  th,td{ padding:6px 6px; font-size:12px }
+}
+
+/* ========= 라이트박스(확대 보기) ========= */
+.lightbox{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: none; align-items: center; justify-content: center;
+  z-index: 4000;
+}
+.lightbox.open{ display:flex; }
+.lightbox .lb-img{
+  max-width: min(90vw, 560px);
+  max-height: 90vh;
+  image-rendering: pixelated;
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:12px;
+  box-shadow: var(--shadow);
+}
+.lightbox .lb-close{
+  position:absolute; top:16px; right:16px;
+  border:1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius:10px;
+  padding:6px 10px;
+  cursor:pointer; font-weight:700;
+}
+.lightbox .lb-close:hover{
+  background: color-mix(in oklab, var(--surface) 80%, var(--accent));
+  border-color: color-mix(in oklab, var(--border) 60%, var(--accent));
 }
