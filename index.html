@@ -114,14 +114,13 @@
 
       <!-- ===== 우측 사이드 ===== -->
       <aside class="side">
-        <!-- 남은 속성 목록
+        <!-- 남은 속성 목록 -->
         <div class="card">
           <div class="head"><h2>남은 속성</h2></div>
           <div class="body">
             <div class="list" id="remainingTypes"></div>
           </div>
         </div>
-        -->
 
         <!-- 사용 방법 요약 -->
         <div class="card">
@@ -133,7 +132,7 @@
               <li><b>개별 슬롯</b>: 포켓몬 검색 시 타입 자동 적용, 또는 우측에서 직접 선택가능</li>
               <li>
                 <b>추천(남은 자리)</b>: 옵션(개수, 타입 중복 최소화, 스피드, 역할) 선택 후 점수순 후보 제시
-                <br>스크롤하여 더 많은 추천 포켓몬 확인 가능
+                <br><b>스크롤</b>하여 더 많은 추천 포켓몬 확인 가능
                 <ul>
                   <li><b>추천 생성</b>은 리스트 표시, <b>자동 배치</b>는 상위 후보를 빈 슬롯에 즉시 배치</li>
                   <li>점수 기준: 미커버 2× 가산, 팀 약점 저항/면역 가산, 역할 일치 가산, 스피드/BST 소폭 가산, 과도한 타입 중복 감점</li>
@@ -146,7 +145,10 @@
         <!-- 추천 (남은 자리) -->
         <div class="card" id="recoCard">
           <div class="head">
-            <h2>추천 (남은 자리)</h2>
+            <div class="title">
+              <h2>추천 (남은 자리)</h2>
+              <div class="hint" id="recoHint">스크롤하여 확인하세요</div>
+            </div>
 
             <!-- 추천 액션 -->
             <div class="controls">

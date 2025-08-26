@@ -333,7 +333,6 @@ export function renderDefenseSummary(fourX, twoX, immune, TYPE_LABEL, TYPE_COLOR
 }
 */
 
-/*
 export function renderRemaining(typeCounterEl, remainingEl, team, TYPES, TYPE_LABEL, TYPE_COLOR){
   const have = new Set();
   for (const { t1, t2 } of team){
@@ -358,4 +357,3 @@ export function renderRemaining(typeCounterEl, remainingEl, team, TYPES, TYPE_LA
   const MAX_UNIQUE = 12;
   typeCounterEl.textContent = `고유 속성: ${have.size}/${MAX_UNIQUE}`;
 }
-*/

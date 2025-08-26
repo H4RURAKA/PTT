@@ -4,7 +4,7 @@ import { computeAttack, computeDefense, coverTypesFor } from './compute.js';
 import {
   buildTeamBoard, reflectChips, renderSlotMini,
   renderAttackSummary, renderAttackTable, renderAttackRows, applyAttackHighlight, renderHoleSuggestions,
-  /* renderDefenseSummary, renderDefenseTable, renderRemaining */
+  /* renderDefenseSummary, renderDefenseTable,*/ renderRemaining
 } from './render.js';
 import { wireHeaderButtons, adjustHeaderSpacer as _adjustHeaderSpacer } from './ui.js';
 
@@ -259,7 +259,7 @@ export function bootstrapApp(ctx){
 
   // ===== 전체 갱신 =====
   function updateAll(){
-    // renderRemaining(typeCounterEl, remainingEl, team, TYPES, TYPE_LABEL, TYPE_COLOR);
+    renderRemaining(typeCounterEl, remainingEl, team, TYPES, TYPE_LABEL, TYPE_COLOR);
 
     // 공격 표/지표
     const atk = computeAttack(ATK, TYPES, team, effect);
@@ -544,29 +544,42 @@ export function bootstrapApp(ctx){
 
 export const adjustHeaderSpacer = _adjustHeaderSpacer;
 
-// 좌측 메인 칼럼(bottom) 기준으로 추천 카드 높이 보정
+// 좌측 '공격 커버리지' 카드의 바닥(bottom)까지를 기준으로 추천 카드 높이 보정
 function adjustRecoScroller(){
   const card = document.getElementById('recoCard');
   if (!card) return;
 
-  const head = card.querySelector('.head');
-  const body = card.querySelector('.body');
+  const body  = card.querySelector('.body');
+  const headH = card.querySelector('.head')?.offsetHeight ?? 56;
 
-  const cardRect = card.getBoundingClientRect();
+  // 도우미: 문서 기준 top/bottom
+  const docTop    = (el) => el.getBoundingClientRect().top    + window.scrollY;
+  const docBottom = (el) => el.getBoundingClientRect().bottom + window.scrollY;
 
-  // 기준: 좌측 메인 칼럼의 '바닥' (없는 경우 뷰포트 바닥)
-  const main = document.querySelector('.main');
-  const mainBottom = main ? main.getBoundingClientRect().bottom : window.innerHeight+1000;
+  // 1) 앵커: 공격 커버리지 카드(attackTable가 들어있는 카드)의 문서 기준 bottom
+  let anchorEl =
+    document.getElementById('attackTable')?.closest('.card') ||
+    document.getElementById('attackTable') ||
+    document.querySelector('.main'); // 폴백
 
-  // 좌측 끝까지 카드가 차지할 수 있는 최대 높이
-  // (안전마진 16px, 최소 200px 보장, 1열 레이아웃(모바일)에서는 viewport를 자동 상한으로 사용)
-  const byLeft = mainBottom - cardRect.top - 16;
-  const byViewport = window.innerHeight - cardRect.top - 16;
-  const avail = Math.max(200, Math.min(byLeft, Math.max(byViewport, 0)));
+  let anchorBottomDoc = anchorEl ? docBottom(anchorEl) : document.body.scrollHeight;
 
-  // CSS 변수로 내려주면 styles.css의 max-height들이 따라 감
+  // 2) 추천 카드의 문서 기준 top
+  const cardTopDoc = docTop(card);
+
+  // 3) 가용 높이 = (앵커 바닥 - 카드 top - 패딩)
+  const pad = 16;
+  let avail = Math.floor(anchorBottomDoc - cardTopDoc - pad);
+  avail = Math.max(200, avail);          // 하한 보장
+
+  // 4) 1열 레이아웃(모바일)에서는 화면 하단을 상한으로 캡(겹치는 스택 방지)
+  const isOneCol = window.matchMedia('(max-width: 1180px)').matches;
+  if (isOneCol) {
+    const vpAvail = Math.floor(window.innerHeight - card.getBoundingClientRect().top - pad);
+    avail = Math.max(200, Math.min(avail, vpAvail));
+  }
+
+  // CSS 변수로 내려서 styles.css의 max-height가 따라가게 함
   card.style.setProperty('--reco-max', `${avail}px`);
-
-  const headH = head ? head.offsetHeight : 56;
-  body.style.setProperty('--reco-body-max', `${Math.max(120, avail - headH - 8)}px`);
+  if (body) body.style.setProperty('--reco-body-max', `${Math.max(120, avail - headH - 8)}px`);
 }
