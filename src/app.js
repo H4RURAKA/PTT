@@ -4,7 +4,7 @@ import { computeAttack, computeDefense, coverTypesFor } from './compute.js';
 import {
   buildTeamBoard, reflectChips, renderSlotMini,
   renderAttackSummary, renderAttackTable, renderAttackRows, applyAttackHighlight, renderHoleSuggestions,
-  renderDefenseSummary, renderDefenseTable, renderRemaining
+  /*renderDefenseSummary,*/ renderDefenseTable, renderRemaining
 } from './render.js';
 import { wireHeaderButtons, adjustHeaderSpacer as _adjustHeaderSpacer } from './ui.js';
 
@@ -186,10 +186,12 @@ export function bootstrapApp(ctx){
     const coverFn = (def)=>coverTypesFor(ATK, TYPES, effect, def);
     renderHoleSuggestions(holeSuggestEl, TYPES, TYPE_LABEL, TYPE_COLOR, coverFn, atk.bestByDef);
 
+    /*
     const def = computeDefense(ATK, TYPES, team, combinedDefenseMultiplier);
     renderDefenseSummary(def.fourX, def.twoX, def.immune, TYPE_LABEL, TYPE_COLOR, defFourEl, defTwoEl, defImmEl, defListEl);
     renderDefenseTable(defenseTableEl, TYPE_LABEL, def.agg);
-
+    */
+   
     // 추천 필터(미커버/방어 취약) 갱신
     renderRecoReasons();
 
@@ -311,6 +313,11 @@ export function bootstrapApp(ctx){
       team[slot].t1 = p.t[0] || ''; team[slot].t2 = p.t[1] || '';
       team[slot].pkm = { n:p.n, b:p.b, tags:p.tags||[], s:p.s||null };
       setSprite(slot, p.s || null);
+      
+      const row = teamBoard.querySelector(`[data-i='${slot}']`);
+      const searchInput = row?.querySelector('input.search');
+      if (searchInput) searchInput.value = p.n;
+
       reflectChips(teamBoard, team, slot);
       renderSlotMini(teamBoard, team, slot, ATK, TYPES, TYPE_COLOR, TYPE_LABEL, combinedDefenseMultiplier);
       updateAll();
@@ -320,6 +327,11 @@ export function bootstrapApp(ctx){
   async function runRecommend(K){
     if (!POKEDEX.length){ alert('포켓몬 데이터가 아직 로드되지 않았습니다. /data/pokemon.min.json을 준비해 주세요.'); return; }
     if (!K || K<1) K = 1;
+    // 팀이 완전 비어 있는 경우 추천 금지
+    if (!team.some(s => s.t1 || s.t2)) {
+      alert('팀이 비어 있습니다. 먼저 최소 1마리의 타입을 선택하거나 포켓몬을 검색해 주세요.');
+      return;
+    }
 
     renderRecoReasons();
 
@@ -344,6 +356,10 @@ export function bootstrapApp(ctx){
   async function runRecommendRandom(K){
     if (!POKEDEX.length){ alert('포켓몬 데이터가 아직 로드되지 않았습니다.'); return; }
     if (!K || K < 1) K = 1;
+    if (!team.some(s => s.t1 || s.t2)) {
+      alert('팀이 비어 있습니다. 먼저 최소 1마리의 타입을 선택하거나 포켓몬을 검색해 주세요.');
+      return;
+    }
 
     renderRecoReasons();
 
