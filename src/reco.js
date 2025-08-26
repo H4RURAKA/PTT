@@ -27,6 +27,7 @@ export async function loadPokedex() {
  *  - 데이터 누락을 고려하여 기본값 부여
  * -----------------------------------------------------*/
 export function autoTags(p) {
+  // BUGFIX: 길이 체크 10 → 6
   const stats = Array.isArray(p.b) && p.b.length >= 6 ? p.b : [0,0,0,0,0,0];
   const [HP, Atk, Def, SpA, SpD, Spe] = stats;
 
@@ -83,7 +84,7 @@ export function scoreCandidate(ctx, p, options) {
     const m1 = effect(ATK, wk, types[0]) ?? 1;
     const m2 = types[1] ? (effect(ATK, wk, types[1]) ?? 1) : 1;
     const m  = m1 * m2;
-    if (m === 0)      s += weights.defense * 1.2; // 면역이면 가산 больше
+    if (m === 0)      s += weights.defense * 1.2; // 면역이면 가산
     else if (m <= .5) s += weights.defense;       // 저항이면 가산
   }
 
@@ -109,7 +110,7 @@ export function scoreCandidate(ctx, p, options) {
   // 6) 타입 중복 페널티
   if (minDup && teamTypes?.size) {
     const dup = types.filter(t => teamTypes.has(t)).length;
-    if (dup >= 2)      s -= 0.8;
+    if (dup >= 2)       s -= 0.8;
     else if (dup === 1) s -= 0.35;
   }
 
@@ -150,69 +151,8 @@ export function explainCandidate(ctx, p, options) {
   if (tagset.has('hazard'))   badges.push('깔개');
   if ((Array.isArray(p.b) && p.b[5] >= 110)) badges.push('스피드 110+');
 
-  // 중복 제거 후 6개까지만
-  return Array.from(new Set(badges)).slice(0, 6);
-}
-
-/* -------------------------------------------------------
- * 그리디 추천(상위 K)
- *  - 한 번에 하나씩 팀에 가상 배치 → 컨텍스트 갱신 반복
- * -----------------------------------------------------*/
-export function recommendGreedy(env, pokedex, team, K, opt) {
-  const { TYPES, TYPE_LABEL, TYPE_COLOR, ATK, effect, combinedDefenseMultiplier } = env;
-  const weights = { offense:3, defense:3, roles:2, speed:1.5, bst:0.5, ...(opt?.weights || {}) };
-
-  let ctxBase = buildRecoContext({ ATK, TYPES, effect, combinedDefenseMultiplier }, team);
-  let curTeam = team.map(s => ({ ...s }));
-
-  const picks = [];
-  const seen  = new Set();
-
-  for (let step = 0; step < K; step++) {
-    // 현재 팀의 사용 타입 집합
-    const teamTypes = new Set();
-    for (const { t1, t2 } of curTeam) {
-      if (t1) teamTypes.add(t1);
-      if (t2) teamTypes.add(t2);
-    }
-
-    // 옵션 스냅샷
-    const desiredRoles = new Set(opt?.desiredRoles || []);
-    const options = {
-      offenseHoles: ctxBase.offenseHoles,
-      weakRank:     ctxBase.weakRank,
-      desiredRoles, weights, teamTypes,
-      minDup: !!opt?.minDup,
-      speedBias: !!opt?.speedBias
-    };
-
-    // 최고 점수 후보 1명 뽑기
-    let best = null;
-    for (const p of pokedex) {
-      const pid = p.i ?? p.n;
-      if (seen.has(pid)) continue;
-      if (!Array.isArray(p.t) || p.t.length === 0) continue; // 타입 정보가 없으면 스킵
-
-      const score = scoreCandidate({ ATK, effect, TYPE_LABEL }, p, options);
-      if (!best || score > best.score) best = { p, score };
-    }
-    if (!best) break;
-
-    picks.push(best);
-    seen.add(best.p.i ?? best.p.n);
-
-    // 빈 슬롯에 가상 배치
-    const idx = curTeam.findIndex(s => !s.t1 && !s.t2);
-    if (idx >= 0) {
-      curTeam[idx] = { ...curTeam[idx], t1: best.p.t[0] || '', t2: best.p.t[1] || '' };
-      // 배치 후 컨텍스트 갱신
-      ctxBase = buildRecoContext({ ATK, TYPES, effect, combinedDefenseMultiplier }, curTeam);
-    } else {
-      // 더 이상 빈 슬롯이 없으면 종료
-      break;
-    }
-  }
-  return picks;
+  // 중복 제거 후 10개까지만
+  return Array.from(new Set(badges)).slice(0, 10);
 }
 
 /* -------------------------------------------------------
@@ -265,4 +205,69 @@ export function recommendWeighted(env, pokedex, team, K, opt){
     }));
 
   return _weightedSample(scored, Math.max(1, K | 0));
+}
+
+/* -------------------------------------------------------
+ * 그리디 추천(상위 K) — FIXED
+ *  - 빈 슬롯이 없어도 "가상 선택"으로 계속 뽑아 K개를 채운다.
+ *  - 가상 상태에서 미커버 구멍을 줄이고, 타입 중복 페널티 계산에 누적 타입 포함.
+ * -----------------------------------------------------*/
+export function recommendGreedy(env, pokedex, team, K, opt) {
+  const { TYPES, TYPE_LABEL, ATK, effect, combinedDefenseMultiplier } = env;
+  const weights = { offense:3, defense:3, roles:2, speed:1.5, bst:0.5, ...(opt?.weights || {}) };
+
+  // 초기 컨텍스트/가상 상태
+  let ctxBase = buildRecoContext({ ATK, TYPES, effect, combinedDefenseMultiplier }, team);
+  let curTeam = team.map(s => ({ ...s }));
+
+  let virtOffenseHoles = ctxBase.offenseHoles.slice(); // 미커버 목록(가상 선택으로 줄여감)
+  let virtTeamTypes    = new Set(curTeam.flatMap(s => [s.t1, s.t2].filter(Boolean))); // 가상 타입 집합
+
+  const picks = [];
+  const seen  = new Set();
+
+  for (let step = 0; step < K; step++) {
+    // 옵션 스냅샷(가상 상태 반영)
+    const desiredRoles = new Set(opt?.desiredRoles || []);
+    const options = {
+      offenseHoles: virtOffenseHoles,
+      weakRank:     ctxBase.weakRank,
+      desiredRoles, weights,
+      teamTypes: new Set(virtTeamTypes),
+      minDup: !!opt?.minDup,
+      speedBias: !!opt?.speedBias
+    };
+
+    // 최고 점수 후보 1명 뽑기
+    let best = null;
+    for (const p of pokedex) {
+      const pid = p.i ?? p.n;
+      if (seen.has(pid)) continue;
+      if (!Array.isArray(p.t) || p.t.length === 0) continue; // 타입 없는 항목 제외
+
+      const score = scoreCandidate({ ATK, effect, TYPE_LABEL }, p, options);
+      if (!best || score > best.score) best = { p, score };
+    }
+    if (!best) break;
+
+    picks.push(best);
+    seen.add(best.p.i ?? best.p.n);
+
+    // 실제 빈 슬롯이 있으면 가상 배치 + 컨텍스트 재계산
+    const idx = curTeam.findIndex(s => !s.t1 && !s.t2);
+    if (idx >= 0) {
+      curTeam[idx] = { ...curTeam[idx], t1: best.p.t[0] || '', t2: best.p.t[1] || '' };
+      ctxBase = buildRecoContext({ ATK, TYPES, effect, combinedDefenseMultiplier }, curTeam);
+      virtOffenseHoles = ctxBase.offenseHoles.slice();
+      virtTeamTypes = new Set(curTeam.flatMap(s => [s.t1, s.t2].filter(Boolean)));
+    } else {
+      // 빈 슬롯이 없어도 리스트를 채우기 위해 "가상 선택"만 반영
+      for (const t of (best.p.t || [])) virtTeamTypes.add(t);
+      virtOffenseHoles = virtOffenseHoles.filter(hole =>
+        !(best.p.t || []).some(atk => effect(ATK, atk, hole) === 2)
+      );
+      // weakRank는 실제 팀 기준 유지 (원하면 완화 가능)
+    }
+  }
+  return picks;
 }

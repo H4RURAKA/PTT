@@ -189,7 +189,7 @@ header{
 }
 
 /* ===== Tables ===== */
-.table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px; }
+.table-wrap{ overflow:auto; border:1px solid var(--border); border-radius:12px; scrollbar-gutter: stable both-edges;}
 table{
   border-collapse:separate; border-spacing:0;
   width:100%; table-layout:fixed;
@@ -213,7 +213,7 @@ thead th.sticky-col{ z-index:4; }
 #defenseTable th:first-child,#defenseTable td:first-child{ width:120px; }
 
 /* Eff chips */
-.eff{ border-radius:8px; padding:4px 6px; font-weight:700; display:inline-block; min-width:40px; }
+.eff{ border-radius:6px; padding:2px 4px; font-weight:500; display:inline-block; min-width:35px; }
 .eff-0{ background:var(--eff-0); color:#ddd; }
 .eff-25{ background:var(--eff-25); color:#cfe3ff; }
 .eff-50{ background:var(--eff-50); color:#c9ffe6; }
@@ -265,6 +265,16 @@ thead th.hole-col{ background: color-mix(in oklab, var(--warn) 28%, var(--surfac
     grid-template-columns:1fr;
     grid-template-areas:"count" "dedup" "speed" "roles";
   }
+}
+
+.count-field input#recoCount{
+  width: 72px;
+  padding: 6px 8px;
+  border:1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius:10px;
+  font-weight:600;
 }
 
 .reco-filters{ display:grid; gap:8px; margin-top:8px; padding-bottom:10px; border-bottom:1px dashed var(--border); margin-bottom:12px; }

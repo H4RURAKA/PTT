@@ -158,15 +158,10 @@
             <div class="reco-controls">
               <div class="reco-count">
                 <label>
-                  개수
-                  <select id="recoCount">
-                    <option value="1">1개</option>
-                    <option value="2">2개</option>
-                    <option value="3">3개</option>
-                    <option value="4">4개</option>
-                    <option value="5">5개</option>
-                    <option value="6">6개</option>
-                  </select>
+                  추천받을 개수: 
+                  <label class="count-field">
+                    <input id="recoCount" type="number" min="1" max="10" step="1" value="1-6" inputmode="numeric" />
+                  </label>
                 </label>
               </div>
 
@@ -218,7 +213,7 @@
     import { TYPES, TYPE_KEYS, TYPE_LABEL, TYPE_COLOR, ATK } from './src/types.js';
     import { effect, combinedDefenseMultiplier, effClass, qsEncode, qsDecode } from './src/effects.js';
     import { bootstrapApp, adjustHeaderSpacer } from './src/app.js';
-    import { loadPokedex, recommendGreedy, explainCandidate, autoTags } from './src/reco.js';
+    import { loadPokedex, recommendGreedy, recommendWeighted, explainCandidate, autoTags } from './src/reco.js';
 
     // 앱 초기화 (전역 상태 설정 및 이벤트 바인딩 포함)
     bootstrapApp({

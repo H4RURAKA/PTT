@@ -284,10 +284,12 @@ export function bootstrapApp(ctx){
 
     // 추천 필터(미커버/방어 취약) 갱신
     renderRecoReasons();
-
+    
+    /* 추천 수 제한 X
     // 남은 슬롯 수에 맞춰 추천 개수 기본값 조정
     const empty = team.filter(s => !s.t1 && !s.t2).length;
     if (recoCountSel && empty > 0) recoCountSel.value = String(empty);
+    */
   }
 
   // ===== 추천 사유/필터 렌더 =====
@@ -418,12 +420,18 @@ export function bootstrapApp(ctx){
     updateAll();
   });
 
+  function clamp(n,min,max){
+    n = parseInt(n,10);
+    if (Number.isNaN(n)) return min;
+    return Math.max(min, Math.min(max, n));
+  }
+
   async function runRecommend(K){
     if (!POKEDEX.length){
       alert('포켓몬 데이터가 아직 로드되지 않았습니다. /data/pokemon.min.json을 준비해 주세요.');
       return;
     }
-    if (!K || K < 1) K = 1;
+    K = clamp(K ?? recoCountSel?.value ?? 1, 1, 10);
     if (!hasAnyType(team)){
       alert('팀이 비어 있습니다. 먼저 최소 1마리의 타입을 선택하거나 포켓몬을 검색해 주세요.');
       return;
@@ -444,7 +452,7 @@ export function bootstrapApp(ctx){
       alert('포켓몬 데이터가 아직 로드되지 않았습니다.');
       return;
     }
-    if (!K || K < 1) K = 1;
+    K = clamp(K ?? recoCountSel?.value ?? 1, 1, 10);
     if (!hasAnyType(team)){
       alert('팀이 비어 있습니다. 먼저 최소 1마리의 타입을 선택하거나 포켓몬을 검색해 주세요.');
       return;
@@ -475,12 +483,10 @@ export function bootstrapApp(ctx){
 
   // 버튼 바인딩
   recoBtn?.addEventListener('click', ()=>{
-    const K = parseInt(recoCountSel?.value || '0', 10) || undefined;
-    runRecommend(K);
+    runRecommend(clamp(recoCountSel?.value ?? 1, 1, 10));
   });
   recoRandomBtn?.addEventListener('click', ()=>{
-    const K = parseInt(recoCountSel?.value || '0', 10) || 1;
-    runRecommendRandom(K);
+    runRecommendRandom(clamp(recoCountSel?.value ?? 1, 1, 10));
   });
 
   // 초기 렌더 & URL 반영
