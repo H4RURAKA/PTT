@@ -28,38 +28,68 @@ export function effClass(m){
   return 'eff-100';
 }
 
-// --- URL state: slots & names & theme/cvd ---
+/* ================= URL 상태 인코딩/디코딩 ================ */
 
-export function qsEncode({ team, theme, cvd }){
-  // ex) slots=불꽃+비행|물|...
-  const slots = team
-    .map(s => [s.t1, s.t2].filter(Boolean).join('+'))
-    .join('|');
+/** team: [{t1,t2,name,pkm?}] -> 쿼리스트링
+ *  - p: 포켓몬 이름 배열(선택된 슬롯만)
+ *  - s: 타입 조합 배열(포켓몬 미선택 슬롯만) — "t1+t2"
+ *  - n: 별명 배열(둘 다 공통)
+ *  - theme, cvd
+ */
+export function qsEncode({ team, theme, cvd }) {
+  const usp = new URLSearchParams();
+  if (theme) usp.set('theme', theme);
+  if (cvd)   usp.set('cvd',   cvd);
 
-  // 이름은 안전하게 인코딩
-  const names = team
-    .map(s => encodeURIComponent(s.name || ''))
-    .join('|');
+  const P = [], S = [], N = [];
+  for (let i = 0; i < 6; i++) {
+    const s = team[i] || {};
+    const nick = s.name || '';
+    N[i] = nick ? encodeURIComponent(nick) : '';
 
-  const q = new URLSearchParams();
-  if (slots) q.set('slots', slots);
-  if (names) q.set('names', names);
-  if (theme) q.set('theme', theme);
-  if (cvd)   q.set('cvd', cvd);
-  return q.toString();
+    if (s.pkm && s.pkm.n) {
+      // 포켓몬 선택된 슬롯: 포켓몬 이름만 저장
+      P[i] = encodeURIComponent(s.pkm.n);
+      S[i] = ''; // 타입은 비움(짧게)
+    } else {
+      // 미선택 슬롯: 타입 저장
+      const a = s.t1 || '';
+      const b = s.t2 || '';
+      S[i] = (a || b) ? `${a}+${b}` : '';
+      P[i] = '';
+    }
+  }
+
+  // 뒤쪽 빈 항목 제거(짧게)
+  const trimRight = (arr) => {
+    let k = arr.length;
+    while (k > 0 && (!arr[k - 1] || arr[k - 1] === '')) k--;
+    return arr.slice(0, k);
+  };
+  const p = trimRight(P), s = trimRight(S), n = trimRight(N);
+
+  if (p.length) usp.set('p', p.join(','));   // 포켓몬 이름
+  if (s.length) usp.set('s', s.join(','));   // 타입(t1+t2)
+  if (n.length) usp.set('n', n.join(','));   // 별명
+
+  return usp.toString();
 }
 
-export function qsDecode(){
-  const q = new URLSearchParams(location.search);
+/** location.search -> { theme, cvd, slots[], names[], pokemon[] } */
+export function qsDecode() {
+  const usp   = new URLSearchParams(location.search.slice(1));
+  const theme = usp.get('theme') || usp.get('t') || '';
+  const cvd   = usp.get('cvd')   || '';
 
-  // 빈 슬롯도 인덱스를 유지해야 하므로 filter(Boolean) 사용 금지
-  const slots = (q.get('slots') || '').split('|'); // ['불꽃+비행', '', '물', ...]
-  const names = (q.get('names') || '').split('|').map(decodeURIComponent);
-
-  return {
-    slots,
-    names,
-    theme: q.get('theme') || '',
-    cvd:   q.get('cvd') || ''
+  const split = (k) => {
+    const v = usp.get(k);
+    if (!v) return [];
+    return v.split(',').map(x => decodeURIComponent(x || ''));
   };
+
+  const slots   = split('s'); // "t1+t2"
+  const names   = split('n'); // 별명
+  const pokemon = split('p'); // 포켓몬 이름
+
+  return { theme, cvd, slots, names, pokemon };
 }

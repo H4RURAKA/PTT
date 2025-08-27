@@ -13,10 +13,10 @@ async function tryFetchJSON(url){
 }
 
 export async function loadPokedex() {
-  const primary  = await tryFetchJSON('/data/pokemon.min.json');
+  const primary  = await tryFetchJSON('data/pokemon.min.json');
   if (Array.isArray(primary)) return primary;
 
-  const fallback = await tryFetchJSON('/data/pokemon.sample.json');
+  const fallback = await tryFetchJSON('data/pokemon.sample.json');
   if (Array.isArray(fallback)) return fallback;
 
   return [];

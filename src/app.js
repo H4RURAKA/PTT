@@ -49,6 +49,12 @@ export function bootstrapApp(ctx){
   const recoWeakTypesEl  = document.getElementById('recoWeakTypes'); // 방어 취약
   const datalist         = document.getElementById('pokedexList');
 
+  // 🔹 TDZ 방지: 이벤트 핸들러보다 먼저 선언
+  let POKEDEX = [];
+
+  // 🔹 URL에서 받은 포켓몬 이름을 덱스 로딩 이후 적용하기 위한 대기열
+  const pendingPkm = new Array(TEAM_SIZE).fill('');
+
   buildTeamBoard(teamBoard, team, TYPES, TYPE_COLOR, TYPE_LABEL);
 
   // === 유틸 ===
@@ -195,28 +201,81 @@ export function bootstrapApp(ctx){
     });
   }
 
+  // 문자열/배열 모두를 안전하게 배열로 변환
+  function toArr(v){
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string') return v.split(',');
+    return [];
+  }
+
+  // URL → 상태 복원(축약키 s/n/p 지원)
   function decodeState(){
-    const { theme, cvd, slots, names } = qsDecode();
+    const raw = qsDecode() || {};
+
+    const theme = raw.theme || '';
+    const cvd   = raw.cvd   || '';
+
+    // 축약키(s/n/p)와 구키(slots/names/pokemon) 모두 허용
+    const slots   = toArr(raw.slots   ?? raw.s ?? []);
+    const names   = toArr(raw.names   ?? raw.n ?? []);
+    const pokemon = toArr(raw.pokemon ?? raw.p ?? []);
+
     if (theme) document.documentElement.setAttribute('data-theme', theme);
-    if (cvd)   document.documentElement.setAttribute('data-cvd', cvd);
+    if (cvd)   document.documentElement.setAttribute('data-cvd',   cvd);
 
-    (slots || []).slice(0, TEAM_SIZE).forEach((s, i)=>{
-      const [a, b] = (s || '').split('+');
-      team[i].t1 = a || '';
-      team[i].t2 = b || '';
-    });
-    (names || []).slice(0, TEAM_SIZE).forEach((n, i)=>{
-      team[i].name = n || '';
-    });
+    // 타입/별명 즉시 반영
+    for (let i = 0; i < TEAM_SIZE; i++){
+      const s = slots[i] || '';
+      if (s){
+        const [a,b] = s.split('+');
+        team[i].t1 = a || '';
+        team[i].t2 = b || '';
+      }
+      team[i].name = names[i] || '';
+    }
 
+    // 포켓몬 이름은 덱스 로딩 후 적용할 대기열에 저장
+    for (let i = 0; i < TEAM_SIZE; i++){
+      pendingPkm[i] = pokemon[i] || '';
+    }
+
+    // 1차 렌더(타입/이름만)
     for (let i = 0; i < TEAM_SIZE; i++){
       reflectChips(teamBoard, team, i);
       const row = teamBoard.querySelector(`[data-i='${i}']`);
-      if (row) row.querySelector('input.name').value = team[i].name;
+      if (row) row.querySelector('input.name').value = team[i].name || '';
       renderSlotMini(teamBoard, team, i, ATK, TYPES, TYPE_COLOR, TYPE_LABEL, combinedDefenseMultiplier);
-      // URL 복원 단계에서는 스프라이트 URL을 복원하지 않음(검색 시 표시)
-      setSprite(i, null);
+      setSprite(i, null); // 스프라이트는 덱스 로드 후 적용
     }
+  }
+
+  // 덱스 로드 이후, pendingPkm에 있는 이름을 실제 팀에 반영
+  function applyPendingPokemonByName(){
+    if (!POKEDEX.length) return;
+
+    let touched = false;
+    for (let i = 0; i < TEAM_SIZE; i++){
+      const want = (pendingPkm[i] || '').trim();
+      if (!want) continue;
+
+      const hit = POKEDEX.find(p => normalize(p.n) === normalize(want));
+      if (!hit) continue;
+
+      team[i].t1 = hit.t[0] || '';
+      team[i].t2 = hit.t[1] || '';
+      team[i].pkm = { n: hit.n, b: hit.b, tags: hit.tags || [], s: hit.s || null };
+      setSprite(i, hit.s || null);
+
+      // 검색창에도 이름 넣기
+      const row = teamBoard.querySelector(`[data-i='${i}']`);
+      row?.querySelector('input.search')?.setAttribute('value', hit.n);
+      row?.querySelector('input.search')?.dispatchEvent(new Event('input', { bubbles:true }));
+
+      rebuildSlotUI(i);
+      pendingPkm[i] = '';
+      touched = true;
+    }
+    if (touched) updateAll();
   }
 
   // ===== 추천 공통 컨텍스트 =====
@@ -284,12 +343,6 @@ export function bootstrapApp(ctx){
 
     // 추천 필터(미커버/방어 취약) 갱신
     renderRecoReasons();
-    
-    /* 추천 수 제한 X
-    // 남은 슬롯 수에 맞춰 추천 개수 기본값 조정
-    const empty = team.filter(s => !s.t1 && !s.t2).length;
-    if (recoCountSel && empty > 0) recoCountSel.value = String(empty);
-    */
   }
 
   // ===== 추천 사유/필터 렌더 =====
@@ -474,7 +527,6 @@ export function bootstrapApp(ctx){
       const many = ctx.reco.recommendGreedy(
         env, POKEDEX, team, Math.max(8, K * 4), currentRecoOptionsComputed
       );
-      // 단순 셔플 후 상위 K개
       for (let i = many.length - 1; i > 0; i--){
         const j = Math.floor(Math.random() * (i + 1));
         [many[i], many[j]] = [many[j], many[i]];
@@ -529,13 +581,14 @@ export function bootstrapApp(ctx){
   });
 
   // ===== 포켓덱스 로딩 =====
-  let POKEDEX = [];
   (async ()=>{
     try {
       POKEDEX = await reco.loadPokedex();
       if (datalist){
         datalist.innerHTML = POKEDEX.map(p => `<option value="${p.n}"></option>`).join('');
       }
+      // URL로부터 받은 포켓몬 이름 적용
+      applyPendingPokemonByName();
     } catch {
       console.warn('Pokedex load failed');
     }
@@ -552,34 +605,28 @@ function adjustRecoScroller(){
   const body  = card.querySelector('.body');
   const headH = card.querySelector('.head')?.offsetHeight ?? 56;
 
-  // 도우미: 문서 기준 top/bottom
   const docTop    = (el) => el.getBoundingClientRect().top    + window.scrollY;
   const docBottom = (el) => el.getBoundingClientRect().bottom + window.scrollY;
 
-  // 1) 앵커: 공격 커버리지 카드(attackTable가 들어있는 카드)의 문서 기준 bottom
   let anchorEl =
     document.getElementById('attackTable')?.closest('.card') ||
     document.getElementById('attackTable') ||
-    document.querySelector('.main'); // 폴백
+    document.querySelector('.main');
 
   let anchorBottomDoc = anchorEl ? docBottom(anchorEl) : document.body.scrollHeight;
 
-  // 2) 추천 카드의 문서 기준 top
   const cardTopDoc = docTop(card);
 
-  // 3) 가용 높이 = (앵커 바닥 - 카드 top - 패딩)
   const pad = 16;
   let avail = Math.floor(anchorBottomDoc - cardTopDoc - pad);
-  avail = Math.max(200, avail);          // 하한 보장
+  avail = Math.max(200, avail);
 
-  // 4) 1열 레이아웃(모바일)에서는 화면 하단을 상한으로 캡(겹치는 스택 방지)
   const isOneCol = window.matchMedia('(max-width: 1180px)').matches;
   if (isOneCol) {
     const vpAvail = Math.floor(window.innerHeight - card.getBoundingClientRect().top - pad);
     avail = Math.max(200, Math.min(avail, vpAvail));
   }
 
-  // CSS 변수로 내려서 styles.css의 max-height가 따라가게 함
   card.style.setProperty('--reco-max', `${avail}px`);
   if (body) body.style.setProperty('--reco-body-max', `${Math.max(120, avail - headH - 8)}px`);
 }
@@ -604,7 +651,6 @@ function closeModal(){
   modal.hidden = true;
   document.body.style.overflow = '';
 }
-// 닫기 바인딩
 (() => {
   const modal = document.getElementById('modal');
   modal?.addEventListener('click', (e)=>{
@@ -632,7 +678,6 @@ function closeModal(){
     });
   });
 
-  // 메뉴 버튼 → 기존 헤더 버튼 프록시 클릭
   document.getElementById('modalPanel')?.addEventListener('click', (e)=>{
     const b = e.target.closest('[data-act]');
     if (!b) return;
