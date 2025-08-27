@@ -313,7 +313,6 @@ export function renderDefenseTable(tableEl, TYPE_LABEL, agg){
   tableEl.innerHTML = thead + `<tbody>${rows.join('')}</tbody>`;
 }
 
-/*
 export function renderDefenseSummary(fourX, twoX, immune, TYPE_LABEL, TYPE_COLOR, fourEl, twoEl, immEl, listEl){
   fourEl.textContent = `${fourX.length} 타입`;
   twoEl.textContent  = `${twoX.length} 타입`;
@@ -331,7 +330,6 @@ export function renderDefenseSummary(fourX, twoX, immune, TYPE_LABEL, TYPE_COLOR
     listEl.appendChild(el);
   });
 }
-*/
 
 export function renderRemaining(typeCounterEl, remainingEl, team, TYPES, TYPE_LABEL, TYPE_COLOR){
   const have = new Set();

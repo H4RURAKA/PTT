@@ -4,7 +4,7 @@ import { computeAttack, computeDefense, coverTypesFor } from './compute.js';
 import {
   buildTeamBoard, reflectChips, renderSlotMini,
   renderAttackSummary, renderAttackTable, renderAttackRows, applyAttackHighlight, renderHoleSuggestions,
-  /* renderDefenseSummary, renderDefenseTable,*/ renderRemaining
+  renderDefenseSummary, renderDefenseTable, renderRemaining
 } from './render.js';
 import { wireHeaderButtons, adjustHeaderSpacer as _adjustHeaderSpacer } from './ui.js';
 
@@ -334,12 +334,10 @@ export function bootstrapApp(ctx){
     const coverFn = (def) => coverTypesFor(ATK, TYPES, effect, def);
     renderHoleSuggestions(holeSuggestEl, TYPES, TYPE_LABEL, TYPE_COLOR, coverFn, atk.bestByDef);
 
-    /*
     // 방어 요약/표
     const def = computeDefense(ATK, TYPES, team, combinedDefenseMultiplier);
     renderDefenseSummary(def.fourX, def.twoX, def.immune, TYPE_LABEL, TYPE_COLOR, defFourEl, defTwoEl, defImmEl, defListEl);
     renderDefenseTable(defenseTableEl, TYPE_LABEL, def.agg);
-    */
 
     // 추천 필터(미커버/방어 취약) 갱신
     renderRecoReasons();
@@ -609,8 +607,8 @@ function adjustRecoScroller(){
   const docBottom = (el) => el.getBoundingClientRect().bottom + window.scrollY;
 
   let anchorEl =
-    document.getElementById('attackTable')?.closest('.card') ||
-    document.getElementById('attackTable') ||
+    document.getElementById('defenseTable')?.closest('.card') ||
+    document.getElementById('defenseTable') ||
     document.querySelector('.main');
 
   let anchorBottomDoc = anchorEl ? docBottom(anchorEl) : document.body.scrollHeight;
