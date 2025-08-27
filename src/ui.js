@@ -6,13 +6,14 @@
  * - addEventListener 사용으로 외부 스크립트와 충돌 최소화
  * - 반환값: 언바인드 함수(선택 사용)
  */
-export function wireHeaderButtons({ onReset, onShare, onPrint, onTheme, onCvd }) {
+export function wireHeaderButtons({ onReset, onShare, onPrint, onTheme, onCvd, onScores, }) {
   const pairs = [
     ['resetBtn', onReset],
     ['shareBtn', onShare],
     ['printBtn', onPrint],
     ['themeBtn', onTheme],
     ['cvdBtn',   onCvd],
+    ['scoresBtn', onScores],
   ];
 
   const disposers = [];

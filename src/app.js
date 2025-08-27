@@ -575,7 +575,27 @@ export function bootstrapApp(ctx){
     onCvd: ()=>{
       const cur = document.documentElement.getAttribute('data-cvd') || '0';
       document.documentElement.setAttribute('data-cvd', cur === '0' ? '1' : '0');
+    },
+    onScores: ()=>{
+    // 1) 현재 팀에서 이름 채워진 포켓몬만 수집
+    const names = [];
+    for (let i = 0; i < TEAM_SIZE; i++) {
+      const row   = teamBoard.querySelector(`[data-i='${i}']`);
+      const typed = row?.querySelector('input.search')?.value?.trim(); // 입력창 내용
+      const chosen= team[i]?.pkm?.n?.trim();                            // 실제 선택(스프라이트 있는 경우)
+      const name  = chosen || typed;                                    // 선택 우선, 없으면 입력값
+      if (name) names.push(name);
     }
+
+    // 2) 목적지 URL 구성 (/scores/ 경로로 p=이름1,이름2,... 전달)
+    const base = new URL('scores/', location.href); // /pokemon/ 아래라면 /pokemon/scores/ 로 맞춰짐
+    if (names.length) {
+      const p = names.map(encodeURIComponent).join(',');
+      base.searchParams.set('p', p);
+    }
+    // 3) 이동
+    location.href = base.toString();
+  },
   });
 
   // ===== 포켓덱스 로딩 =====
@@ -670,6 +690,7 @@ function closeModal(){
           <button class="btn block" data-act="cvd">색각친화</button>
           <button class="btn block" data-act="theme">라이트/다크</button>
           <button class="btn block" data-act="reset">초기화</button>
+          <button class="btn block" data-act="scores">점수 보기</button>
           <button class="btn block" data-act="share">URL 복사</button>
           <button class="btn block" data-act="print">인쇄</button>
         </div>`
@@ -683,6 +704,7 @@ function closeModal(){
       cvd: 'cvdBtn',
       theme: 'themeBtn',
       reset: 'resetBtn',
+      scores: 'scoresBtn',
       share: 'shareBtn',
       print: 'printBtn'
     };

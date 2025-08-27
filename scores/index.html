@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>점수 보기 · 포켓몬 속성 계산표</title>
+  <link rel="stylesheet" href="scores.css" />
+</head>
+<body>
+  <!-- 상단바: 메인 톤과 동일 -->
+  <header class="appbar">
+    <div class="appbar__left">
+      <h1>포켓몬 속성 계산표 · 커버리지 & 약점 분석</h1>
+      <span class="pill">6세대 이후 타입 상성 기준</span>
+    </div>
+    <div class="appbar__right">
+      <a class="btn" href="../index.html">메인으로</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="cards" class="cards"></section>
+    <div class="total">
+      <div class="total__label">총합 점수:</div>
+      <div class="total__value" id="totalScore">0.00</div>
+    </div>
+  </main>
+
+  <datalist id="pokedexList"></datalist>
+
+  <script type="module" src="./src/scores.js"></script>
+</body>
+</html>

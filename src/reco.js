@@ -12,11 +12,19 @@ async function tryFetchJSON(url){
   try { return await r.json(); } catch { return null; }
 }
 
+// 모듈 파일(src/reco.js) 기준으로 data 경로를 계산
+function dataURL(file){
+  // reco.js 가 /.../src/reco.js 에 있을 때 → ../data/<file>
+  return new URL(`../data/${file}`, import.meta.url).href;
+}
+
 export async function loadPokedex() {
-  const primary  = await tryFetchJSON('data/pokemon.min.json');
+  // 1순위: pokemon.min.json
+  const primary  = await tryFetchJSON(dataURL('pokemon.min.json'));
   if (Array.isArray(primary)) return primary;
 
-  const fallback = await tryFetchJSON('data/pokemon.sample.json');
+  // 2순위: pokemon.sample.json (샘플)
+  const fallback = await tryFetchJSON(dataURL('pokemon.sample.json'));
   if (Array.isArray(fallback)) return fallback;
 
   return [];
