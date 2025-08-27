@@ -8,25 +8,37 @@
   <link rel="stylesheet" href="./src/styles.css" />
 </head>
 
+<div id="modal" class="modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-panel" id="modalPanel"></div>
+</div>
+
 <body>
   <!-- ===== 고정 헤더 ===== -->
   <header id="appHeader">
     <div class="wrap">
       <div class="app-title">
-        <h1>포켓몬 속성 계산표 · 커버리지 & 약점 분석</h1>
-        <span class="pill">6세대 이후 타입 상성 기준</span>
+        <h1 class="desktop-only">포켓몬 속성 계산표 · 커버리지 & 약점 분석</h1>
+        <span class="pill desktop-only">6세대 이후 타입 상성 기준</span>
 
-        <!-- 상단 우측 컨트롤 -->
-        <div class="right controls" role="group" aria-label="화면 설정 및 공유">
-          <button id="cvdBtn" class="btn" type="button" title="색각친화 모드" aria-label="색각친화 모드 전환" aria-pressed="false">색각친화</button>
-          <button id="themeBtn" class="btn" type="button" title="테마 전환" aria-label="라이트 다크 테마 전환" aria-pressed="false">라이트/다크</button>
-          <button id="resetBtn" class="btn" type="button" title="초기화" aria-label="초기화">초기화</button>
-          <button id="shareBtn" class="btn" type="button" title="선택 상태를 URL로 공유" aria-label="URL 복사">URL 복사</button>
-          <button id="printBtn" class="btn" type="button" title="인쇄" aria-label="인쇄">인쇄</button>
+        <h1 class="mobile-only">포켓몬 속성 계산표</h1>
+        <span class="pill mobile-only">6세대 이후 기준</span>
+        <button id="menuBtn" class="btn icon-btn mobile-only" aria-label="메뉴">MENU</button>
+
+        <div class="right controls desktop-only">
+          <!-- 상단 우측 컨트롤 -->
+          <div class="right controls" role="group" aria-label="화면 설정 및 공유">
+            <button id="cvdBtn" class="btn" type="button" title="색각친화 모드" aria-label="색각친화 모드 전환" aria-pressed="false">색각친화</button>
+            <button id="themeBtn" class="btn" type="button" title="테마 전환" aria-label="라이트 다크 테마 전환" aria-pressed="false">라이트/다크</button>
+            <button id="resetBtn" class="btn" type="button" title="초기화" aria-label="초기화">초기화</button>
+            <button id="shareBtn" class="btn" type="button" title="선택 상태를 URL로 공유" aria-label="URL 복사">URL 복사</button>
+            <button id="printBtn" class="btn" type="button" title="인쇄" aria-label="인쇄">인쇄</button>
+          </div>
         </div>
+
       </div>
 
-      <div class="sub">
+      <div class="sub desktop-only">
         팀(최대 6마리)의 속성을 직접 선택하거나, 포켓몬을 검색해서 타입을 적용하세요. 각 슬롯은 최대 2속성까지 선택 가능합니다.
       </div>
     </div>

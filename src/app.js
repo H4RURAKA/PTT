@@ -583,3 +583,69 @@ function adjustRecoScroller(){
   card.style.setProperty('--reco-max', `${avail}px`);
   if (body) body.style.setProperty('--reco-body-max', `${Math.max(120, avail - headH - 8)}px`);
 }
+
+/* ====================================================== */
+/* ======================= 모바일 ========================= */
+/* ====================================================== */
+
+/* ========= 공용 모달 유틸 ========= */
+function openModal({ html, className = '' }){
+  const modal = document.getElementById('modal');
+  const panel = document.getElementById('modalPanel');
+  if (!modal || !panel) return;
+  panel.className = `modal-panel ${className}`.trim();
+  panel.innerHTML = html || '';
+  modal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){
+  const modal = document.getElementById('modal');
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.style.overflow = '';
+}
+// 닫기 바인딩
+(() => {
+  const modal = document.getElementById('modal');
+  modal?.addEventListener('click', (e)=>{
+    if (e.target.matches('.modal-backdrop,[data-close]')) closeModal();
+  });
+  window.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeModal(); });
+})();
+
+/* ========= 햄버거 메뉴 → 모달로 표시 ========= */
+(function wireMobileMenu(){
+  const openBtn = document.getElementById('menuBtn');
+  if (!openBtn) return;
+
+  openBtn.addEventListener('click', ()=> {
+    openModal({
+      className: 'menu',
+      html: `
+        <div class="menu-list">
+          <button class="btn block" data-act="cvd">색각친화</button>
+          <button class="btn block" data-act="theme">라이트/다크</button>
+          <button class="btn block" data-act="reset">초기화</button>
+          <button class="btn block" data-act="share">URL 복사</button>
+          <button class="btn block" data-act="print">인쇄</button>
+        </div>`
+    });
+  });
+
+  // 메뉴 버튼 → 기존 헤더 버튼 프록시 클릭
+  document.getElementById('modalPanel')?.addEventListener('click', (e)=>{
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const map = {
+      cvd: 'cvdBtn',
+      theme: 'themeBtn',
+      reset: 'resetBtn',
+      share: 'shareBtn',
+      print: 'printBtn'
+    };
+    const id = map[b.dataset.act];
+    const target = document.getElementById(id);
+    if (target) target.click();
+    closeModal();
+  });
+})();

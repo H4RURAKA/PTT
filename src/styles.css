@@ -384,3 +384,159 @@ thead th.hole-col{ background: color-mix(in oklab, var(--warn) 28%, var(--surfac
   background: color-mix(in oklab, var(--surface) 80%, var(--accent));
   border-color: color-mix(in oklab, var(--border) 60%, var(--accent));
 }
+
+/* ====================================================== */
+/* ====================== 모바일 ========================= */
+/* ====================================================== */
+
+/* 공통: 데스크톱/모바일 가시성 */
+.desktop-only { display:flex; gap:8px; }
+.mobile-only  { display:none; }
+@media (max-width: 1180px){
+  .desktop-only { display:none; }
+  .mobile-only  { display:inline-flex; }
+  .icon-btn { padding:8px 10px; font-weight:700; }
+}
+
+/* 모바일 시트 */
+.sheet[hidden]{ display:none !important; }
+.sheet{ position:fixed; inset:0; z-index:2000; }
+.sheet-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.45); }
+.sheet-panel{
+  position:absolute; left:0; right:0; bottom:0;
+  background:var(--card); border-top-left-radius:16px; border-top-right-radius:16px;
+  border:1px solid var(--border); box-shadow:var(--shadow);
+  max-height:70vh; display:flex; flex-direction:column;
+}
+.sheet-head{ display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); }
+.sheet-body{ padding:12px 16px; display:grid; gap:8px; }
+.sheet-body .block{ width:100%; }
+
+/* 모바일 헤더: 좌측(h1+pill) · 우측(MENU 버튼) 정렬 */
+@media (max-width:1180px){
+  header .app-title{
+    display:flex;           /* 이미 flex라면 유지 */
+    align-items:center;
+    gap:8px;
+    width:100%;             /* 버튼을 우측 끝까지 밀 수 있도록 */
+  }
+  /* MENU 버튼을 오른쪽으로 밀기 */
+  #menuBtn.mobile-only{
+    margin-left:auto;       /* 핵심 */
+    display:inline-flex;    /* 높이/수직정렬 안정화 */
+    align-items:center;
+  }
+  /* 보조: 타이틀/배지 사이즈 살짝 컴팩트 */
+  .app-title h1.mobile-only{ font-size:18px; }
+  .app-title .pill.mobile-only{ font-size:12px; }
+}
+
+/* ===== 모바일(≤1180px) — 상단: 좌(입력)/우(스프라이트), 중앙: 타입 4열 ===== */
+@media (max-width:1180px){
+  /* 그리드를 풀고 일반 흐름으로 */
+  .slot .slot-grid{ display:block; }
+
+  /* 카드 안에서 스프라이트만 우측 상단에 고정 */
+  .slot{ position: relative; }
+  .slot .slot-sprite{
+    position:absolute; right:12px; top:12px;
+    width:96px; height:96px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .slot .slot-sprite img{
+    width:96px; height:96px; object-fit:contain; image-rendering:pixelated;
+  }
+  /* 스프라이트가 없으면 자리 제거 + 좌측 여백 복원 */
+  .slot .slot-sprite:empty,
+  .slot .slot-sprite img[src=""],
+  .slot .slot-sprite img:not([src]){ display:none; }
+  .slot.no-sprite .slot-left{ padding-right:0; }
+
+  /* 입력(검색/별명) 영역을 왼쪽, 스프라이트 자리만큼 우측 여백 확보 */
+  .slot .slot-left{
+    min-width:0;
+    padding-right:112px; /* 스프라이트 폭(96) + 여백 */
+  }
+
+  /* 타입 표는 중앙 전체 폭(스프라이트 영역 포함)으로 */
+  .slot .slot-types,
+  .slot .chip-row{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important; /* 6×3 → 4열 */
+    gap:6px !important;
+    width:100%;
+  }
+
+  /* 칩 사이즈 컴팩트 */
+  .chip, .chip.sm{ padding:6px 8px !important; font-size:13px !important; border-radius:10px; }
+  .chip .dot{ width:8px; height:8px; }
+
+  /* 종족값 라인 줄바꿈 허용 — 카드 밖으로 넘침 방지 */
+  .statline{ font-size:13px !important; line-height:1.25; white-space:normal; overflow-wrap:anywhere; }
+
+  /* 아래쪽 칩/태그들도 살짝 축소 */
+  .pill{ padding:4px 8px; font-size:12px; }
+}
+
+/* ===== 모바일: 슬롯 헤더(제목+초기화) ===== */
+@media (max-width:1180px){
+  /* 스프라이트가 있을 때: 스프라이트 폭만큼 우측 패딩 확보(겹침 방지) */
+  .slot .top{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding-right:112px;   /* 96px + 여백 */
+    margin-bottom:8px;
+  }
+  /* 기본은 제목 옆에 버튼(좌측 정렬) */
+  .slot .top .actions{
+    margin-left:0 !important;
+    order:2;
+  }
+
+  /* ── 스프라이트가 '없는' 슬롯일 때만 규칙 변경 ── */
+  .slot.no-sprite .top{
+    padding-right:0;               /* 우측 패딩 제거 */
+  }
+  .slot.no-sprite .top .actions{
+    margin-left:auto !important;   /* 초기화 버튼을 맨 우측으로 밀기 */
+  }
+
+  /* 스프라이트 영역 감추기(없을 때) */
+  .slot.no-sprite .slot-sprite{ display:none !important; }
+}
+
+/* 아주 작은 폭(≤420px)에서 스프라이트와 칩 더 축소 */
+@media (max-width:420px){
+  .slot .slot-sprite{ right:10px; top:10px; }
+  .slot .slot-sprite img{ width:84px; height:84px; }
+  .slot .slot-left{ padding-right:100px; }
+  .chip, .chip.sm{ font-size:12.5px; padding:5px 7px; }
+}
+
+/* ===== 중앙 모달 ===== */
+.modal[hidden]{ display:none !important; }
+.modal{ position:fixed; inset:0; z-index:2200; }
+.modal-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.5); }
+
+.modal-panel{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow);
+  max-width:calc(100vw - 48px); max-height:calc(100vh - 48px);
+  overflow:auto; padding:16px;
+}
+
+/* 스프라이트 확대용 패널 */
+.modal-panel.image{ background:transparent; border:0; box-shadow:none; padding:0; }
+.modal-panel.image img{
+  width:min(76vw, 360px); height:min(76vw, 360px);
+  max-height:80vh; object-fit:contain; image-rendering:pixelated;
+  background:#fff; border-radius:18px; box-shadow:var(--shadow); padding:12px;
+}
+
+/* 햄버거 메뉴용 패널 */
+.modal-panel.menu{ width:min(420px, 92vw); }
+.modal-panel.menu .menu-list{ display:grid; gap:10px; }
+.modal-panel.menu .btn.block{ width:100%; justify-content:center; }
+
